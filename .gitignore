@@ -34,3 +34,4 @@ venv/
 *.png
 *.traj
 
+*.json
