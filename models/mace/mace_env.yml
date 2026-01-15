@@ -1,14 +1,14 @@
-name: mace_phonons
+name: mace_env
 channels:
   - defaults
   - https://repo.anaconda.com/pkgs/main
   - https://repo.anaconda.com/pkgs/r
   - https://repo.anaconda.com/pkgs/msys2
 dependencies:
-  - python=3.11
+  - python=3.10
   - pytorch
   - pytorch-cuda=12
   - torchaudio
   - torchvision
   - ipykernel
-prefix: C:\Users\rnpla\anaconda3\envs\mace_phonons
+prefix: C:\Users\rnpla\anaconda3\envs\mace_phonons # TODO: ensure that this prefix is correct for BUNYA HPC

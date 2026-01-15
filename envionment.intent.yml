@@ -1,0 +1,15 @@
+name: testmace
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pytorch=2.5.1
+  - pytorch-cuda=12.1
+  - numpy
+  - scipy
+  - ipykernel
+  - pip:
+      - ase==3.27.0
