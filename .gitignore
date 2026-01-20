@@ -30,8 +30,14 @@ venv/
 *.npz
 .cache/
 
+# Ignore Results and model cache as well:
+assets/models/**
+results/**
+
+# Forgot to let it ignore the structures: (am leaving the 'assets/structures' folder since i want this backed up for now)
+input_structure/*
+
 # forgot to block the data files. Keep the input files. 
 *.png
 *.traj
-
 *.json
