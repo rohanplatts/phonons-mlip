@@ -9,7 +9,6 @@ scripts/phonons/cache.*
 
 .env/
 .venv/
-env/
 venv/
 *.egg-info/
 
