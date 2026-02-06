@@ -1,0 +1,515 @@
+Mode–coupling comparison report
+-------------------------------
+DFT: /home/rnpla/projects/mlip_phonons/test/CBVN/band.yaml
+N atoms: 97    N modes: 291
+Settings: threshold=0.900, freq_cluster_tol=0.500, freq_window=0.500, alpha=1.300, weight_kind=S
+q-points used: 1
+  q[0] index=0  pos=[ 0.000000,  0.000000,  0.000000]
+
+DFT Coupling modes  (per mode) 
+-------------------------------
+q[0] index=0  sum(p)=1.000000
+  selected modes: k=13  cumsum_last=0.906262
+  Coupling modes: mode | freq | p):
+      31   7.079503   5.384810e-01
+      58   11.367780   1.906097e-01
+      57   11.125993   7.362567e-02
+      75   15.656533   2.673579e-02
+      84   17.151593   1.270706e-02
+     177   29.123638   9.271332e-03
+     111   19.452359   8.767571e-03
+      82   16.753087   8.660799e-03
+     179   30.224084   8.554050e-03
+     195   33.687570   7.468104e-03
+
+DFT Coupling clusters (eigenspace)
+----------------------------------
+q[0] index=0  pos=[ 0.000000,  0.000000,  0.000000]
+  cid  size  fmin        fmax        w_dft
+    4    35   6.550634   9.632476   0.540667
+    5     3   10.942293   11.367780   0.264235
+    9    49   18.030717   20.682009   0.034739
+    7     7   15.656533   16.109659   0.029404
+    6    16   12.418793   13.775959   0.027630
+   16    17   31.176752   35.012994   0.023934
+
+MLIP comparisons
+----------------
+Model: /home/rnpla/projects/mlip_phonons/results/CHGNet-MPtrj-2023.12.1-2.7M-PES/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=6.535556  min=6.535556  E_freq=5.732048  E_freq_rel=0.356611  E_vec=0.618083
+  AvgProjPowX coupling modes subspace scores X: mean=0.536645  min=0.536645  max=0.536645
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.519402  wθ_mean=77.579907  w(1-σ^2)_mean=0.908065
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=6.535556  E_freq=5.732048  E_freq_rel=0.356611  E_vec=0.618083
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.536645  k_dft=13  k_ml=18  σ_min=0.021256  σ_mean=0.633900  θ_mean=42.860°  θ_max=88.782°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.519402  wθ=77.579907  w(1-σ^2)=0.908065
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.303923   84.047°   89.047°   0.999862
+        5     3   10.942293   11.367780   0.264235   0.059562   83.705°   86.057°   0.997637
+        6    16   12.418793   13.775959   0.027630   0.033508   88.461°   89.776°   0.999992
+        7     7   15.656533   16.109659   0.029404   0.000137   88.334°   88.334°   0.999577
+        9    49   18.030717   20.682009   0.034739   0.015833   85.476°   87.925°   0.999345
+       16    17   31.176752   35.012994   0.023934   0.000001   83.981°   83.981°   0.994507
+
+Model: /home/rnpla/projects/mlip_phonons/results/CHGNet-MPtrj-2024.2.13-11M-PES/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=7.415465  min=7.415465  E_freq=6.436802  E_freq_rel=0.471850  E_vec=0.752818
+  AvgProjPowX coupling modes subspace scores X: mean=0.134123  min=0.134123  max=0.134123
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.851046  wθ_mean=77.241619  w(1-σ^2)_mean=0.898154
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=7.415465  E_freq=6.436802  E_freq_rel=0.471850  E_vec=0.752818
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.134123  k_dft=13  k_ml=7  σ_min=0.054543  σ_mean=0.398985  θ_mean=63.404°  θ_max=86.873°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.851046  wθ=77.241619  w(1-σ^2)=0.898154
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.042889   85.624°   89.945°   1.000000
+        5     3   10.942293   11.367780   0.264235   0.003956   79.299°   87.148°   0.998762
+        6    16   12.418793   13.775959   0.027630   0.000235   88.460°   89.296°   0.999925
+        7     7   15.656533   16.109659   0.029404   0.008141   87.709°   89.670°   0.999983
+        9    49   18.030717   20.682009   0.034739   0.013909   84.723°   89.466°   0.999957
+       16    17   31.176752   35.012994   0.023934   0.000434   84.711°   89.540°   0.999968
+
+Model: /home/rnpla/projects/mlip_phonons/results/CHGNet-MatPES-PBE-2025.2.10-2.7M-PES/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=5.862976  min=5.862976  E_freq=4.842523  E_freq_rel=0.379993  E_vec=0.784964
+  AvgProjPowX coupling modes subspace scores X: mean=0.425238  min=0.425238  max=0.425238
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.567157  wθ_mean=54.155143  w(1-σ^2)_mean=0.775265
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=5.862976  E_freq=4.842523  E_freq_rel=0.379993  E_vec=0.784964
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.425238  k_dft=13  k_ml=14  σ_min=0.002421  σ_mean=0.547641  θ_mean=51.039°  θ_max=89.861°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.567157  wθ=54.155143  w(1-σ^2)=0.775265
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.260870   55.825°   88.005°   0.999394
+        5     3   10.942293   11.367780   0.264235   0.060643   58.179°   67.316°   0.926558
+        6    16   12.418793   13.775959   0.027630   0.023211   87.228°   90.000°   1.000000
+        7     7   15.656533   16.109659   0.029404   0.013463   86.309°   89.992°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.018732   56.529°   89.180°   0.999898
+       16    17   31.176752   35.012994   0.023934   0.071334   70.518°   86.671°   0.998315
+
+Model: /home/rnpla/projects/mlip_phonons/results/CHGNet-MatPES-r2SCAN-2025.2.10-2.7M-PES/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=10.927271  min=10.927271  E_freq=10.038709  E_freq_rel=0.632255  E_vec=0.683509
+  AvgProjPowX coupling modes subspace scores X: mean=0.466293  min=0.466293  max=0.466293
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.681832  wθ_mean=78.562010  w(1-σ^2)_mean=0.906149
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=10.927271  E_freq=10.038709  E_freq_rel=0.632255  E_vec=0.683509
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.466293  k_dft=13  k_ml=15  σ_min=0.008242  σ_mean=0.584051  θ_mean=48.731°  θ_max=89.528°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.681832  wθ=78.562010  w(1-σ^2)=0.906149
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.216752   87.867°   90.000°   1.000000
+        5     3   10.942293   11.367780   0.264235   0.059020   80.512°   89.447°   0.999953
+        6    16   12.418793   13.775959   0.027630   0.134813   86.529°   90.000°   1.000000
+        7     7   15.656533   16.109659   0.029404   0.019129   87.331°   89.980°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.002529   85.535°   88.852°   0.999799
+       16    17   31.176752   35.012994   0.023934   0.020901   77.346°   88.433°   0.999626
+
+Model: /home/rnpla/projects/mlip_phonons/results/M3GNet-MP-2021.2.8-DIRECT-PES/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=13.872716  min=13.872716  E_freq=12.897500  E_freq_rel=1.079009  E_vec=0.750167
+  AvgProjPowX coupling modes subspace scores X: mean=0.456099  min=0.456099  max=0.456099
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.609249  wθ_mean=72.774670  w(1-σ^2)_mean=0.873474
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=13.872716  E_freq=12.897500  E_freq_rel=1.079009  E_vec=0.750167
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.456099  k_dft=13  k_ml=19  σ_min=0.042335  σ_mean=0.552161  θ_mean=49.657°  θ_max=87.574°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.609249  wθ=72.774670  w(1-σ^2)=0.873474
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.227135   79.871°   87.304°   0.998894
+        5     3   10.942293   11.367780   0.264235   0.018595   75.961°   81.297°   0.988574
+        6    16   12.418793   13.775959   0.027630   0.003482   82.237°   90.000°   1.000000
+        7     7   15.656533   16.109659   0.029404   0.016254   83.273°   88.295°   0.999557
+        9    49   18.030717   20.682009   0.034739   0.030145   81.595°   87.435°   0.998999
+       16    17   31.176752   35.012994   0.023934   0.015750   82.068°   88.034°   0.999412
+
+Model: /home/rnpla/projects/mlip_phonons/results/M3GNet-MP-2021.2.8-PES/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=9.936405  min=9.936405  E_freq=8.903370  E_freq_rel=0.659815  E_vec=0.794642
+  AvgProjPowX coupling modes subspace scores X: mean=0.559477  min=0.559477  max=0.559477
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.611111  wθ_mean=76.786199  w(1-σ^2)_mean=0.907582
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=9.936405  E_freq=8.903370  E_freq_rel=0.659815  E_vec=0.794642
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.559477  k_dft=13  k_ml=28  σ_min=0.173338  σ_mean=0.707329  θ_mean=40.560°  θ_max=80.018°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.611111  wθ=76.786199  w(1-σ^2)=0.907582
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.247765   84.780°   89.865°   0.999997
+        5     3   10.942293   11.367780   0.264235   0.029543   82.402°   83.890°   0.994341
+        6    16   12.418793   13.775959   0.027630   0.077399   86.943°   89.874°   0.999998
+        7     7   15.656533   16.109659   0.029404   0.004816   87.134°   89.989°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.037018   85.055°   88.219°   0.999517
+       16    17   31.176752   35.012994   0.023934   0.017052   52.474°   54.610°   0.836937
+
+Model: /home/rnpla/projects/mlip_phonons/results/M3GNet-MatPES-r2SCAN-v2025.1-PES/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=5.925198  min=5.925198  E_freq=5.127700  E_freq_rel=0.447990  E_vec=0.613460
+  AvgProjPowX coupling modes subspace scores X: mean=0.317461  min=0.317461  max=0.317461
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.161473  wθ_mean=19.424683  w(1-σ^2)_mean=0.446786
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=5.925198  E_freq=5.127700  E_freq_rel=0.447990  E_vec=0.613460
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.317461  k_dft=13  k_ml=8  σ_min=0.008211  σ_mean=0.606865  θ_mean=44.292°  θ_max=89.530°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.161473  wθ=19.424683  w(1-σ^2)=0.446786
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.490474    7.234°   16.053°   0.572694
+        5     3   10.942293   11.367780   0.264235   0.234316   35.693°   90.000°   1.000000
+        6    16   12.418793   13.775959   0.027630   0.027567   20.597°   90.000°   1.000000
+        7     7   15.656533   16.109659   0.029404   0.000000   88.297°   90.000°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.022608   51.337°   89.978°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.063696   47.368°   84.947°   0.996124
+
+Model: /home/rnpla/projects/mlip_phonons/results/TensorNetDGL-MatPES-PBE-v2025.1-PES/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=1.812293  min=1.812293  E_freq=1.047904  E_freq_rel=0.104396  E_vec=0.587991
+  AvgProjPowX coupling modes subspace scores X: mean=0.235390  min=0.235390  max=0.235390
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.652169  wθ_mean=14.291780  w(1-σ^2)_mean=0.290239
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=1.812293  E_freq=1.047904  E_freq_rel=0.104396  E_vec=0.587991
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.235390  k_dft=13  k_ml=9  σ_min=0.024125  σ_mean=0.408085  θ_mean=57.823°  θ_max=88.618°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.652169  wθ=14.291780  w(1-σ^2)=0.290239
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.008498    6.152°   75.077°   0.967026
+        5     3   10.942293   11.367780   0.264235   0.183808   35.494°   90.000°   1.000000
+        6    16   12.418793   13.775959   0.027630   0.026951    4.292°   17.568°   0.578946
+        7     7   15.656533   16.109659   0.029404   0.000394   27.443°   40.892°   0.727627
+        9    49   18.030717   20.682009   0.034739   0.026315    4.854°   22.027°   0.600230
+       16    17   31.176752   35.012994   0.023934   0.022475   20.577°   87.167°   0.998779
+
+Model: /home/rnpla/projects/mlip_phonons/results/TensorNetDGL-MatPES-r2SCAN-v2025.1-PES/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=1.476293  min=1.476293  E_freq=0.833172  E_freq_rel=0.043442  E_vec=0.494708
+  AvgProjPowX coupling modes subspace scores X: mean=0.436489  min=0.436489  max=0.436489
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.159087  wθ_mean=14.617831  w(1-σ^2)_mean=0.139745
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=1.476293  E_freq=0.833172  E_freq_rel=0.043442  E_vec=0.494708
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.436489  k_dft=13  k_ml=10  σ_min=0.018500  σ_mean=0.613840  θ_mean=40.434°  θ_max=88.940°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.159087  wθ=14.617831  w(1-σ^2)=0.139745
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.588388    3.328°   31.026°   0.654757
+        5     3   10.942293   11.367780   0.264235   0.214707   34.191°   90.000°   1.000000
+        6    16   12.418793   13.775959   0.027630   0.027821    7.631°   62.914°   0.898120
+        7     7   15.656533   16.109659   0.029404   0.000000   90.000°   90.000°   nan
+        9    49   18.030717   20.682009   0.034739   0.065162   15.329°   89.982°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.025753   16.472°   40.451°   0.724173
+
+Model: /home/rnpla/projects/mlip_phonons/results/mace-matpes-pbe-omat-ft/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=1.528758  min=1.528758  E_freq=0.974075  E_freq_rel=0.093157  E_vec=0.426679
+  AvgProjPowX coupling modes subspace scores X: mean=0.544434  min=0.544434  max=0.544434
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.398823  wθ_mean=13.962465  w(1-σ^2)_mean=0.152313
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=1.528758  E_freq=0.974075  E_freq_rel=0.093157  E_vec=0.426679
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.544434  k_dft=13  k_ml=10  σ_min=0.005379  σ_mean=0.752031  θ_mean=28.407°  θ_max=89.692°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.398823  wθ=13.962465  w(1-σ^2)=0.152313
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.640935    1.744°   10.259°   0.553687
+        5     3   10.942293   11.367780   0.264235   0.006901   35.435°   90.000°   1.000000
+        6    16   12.418793   13.775959   0.027630   0.013730    3.949°   12.375°   0.559707
+        7     7   15.656533   16.109659   0.029404   0.009560   80.823°   88.786°   0.999775
+        9    49   18.030717   20.682009   0.034739   0.041626   24.695°   90.000°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.023345   13.076°   87.162°   0.998775
+
+Model: /home/rnpla/projects/mlip_phonons/results/mace-matpes-r2scan-omat-ft/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=0.975993  min=0.975993  E_freq=0.508419  E_freq_rel=0.045925  E_vec=0.359672
+  AvgProjPowX coupling modes subspace scores X: mean=0.553110  min=0.553110  max=0.553110
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.168435  wθ_mean=4.140336  w(1-σ^2)_mean=0.042011
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=0.975993  E_freq=0.508419  E_freq_rel=0.045925  E_vec=0.359672
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.553110  k_dft=13  k_ml=11  σ_min=0.043963  σ_mean=0.714685  θ_mean=33.571°  θ_max=87.480°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.168435  wθ=4.140336  w(1-σ^2)=0.042011
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.607828    2.139°   13.626°   0.563768
+        5     3   10.942293   11.367780   0.264235   0.193693    6.811°    8.320°   0.549128
+        6    16   12.418793   13.775959   0.027630   0.027360    4.684°   35.510°   0.686583
+        7     7   15.656533   16.109659   0.029404   0.012539   24.024°   33.341°   0.670870
+        9    49   18.030717   20.682009   0.034739   0.046657    2.699°   11.004°   0.555681
+       16    17   31.176752   35.012994   0.023934   0.022257   10.634°   31.064°   0.655018
+
+Model: /home/rnpla/projects/mlip_phonons/results/mace-mpa-0-medium/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=6.778403  min=6.778403  E_freq=5.982676  E_freq_rel=0.288561  E_vec=0.612097
+  AvgProjPowX coupling modes subspace scores X: mean=0.326966  min=0.326966  max=0.326966
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.700748  wθ_mean=47.717402  w(1-σ^2)_mean=0.549372
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=6.778403  E_freq=5.982676  E_freq_rel=0.288561  E_vec=0.612097
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.326966  k_dft=13  k_ml=8  σ_min=0.011633  σ_mean=0.607899  θ_mean=41.326°  θ_max=89.333°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.700748  wθ=47.717402  w(1-σ^2)=0.549372
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.164766   27.453°   90.000°   1.000000
+        5     3   10.942293   11.367780   0.264235   0.008598   85.658°   90.000°   1.000000
+        6    16   12.418793   13.775959   0.027630   0.047890   88.721°   89.998°   1.000000
+        7     7   15.656533   16.109659   0.029404   0.011598   87.673°   89.976°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.041950   88.004°   90.000°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.000000   90.000°   90.000°   nan
+
+Model: /home/rnpla/projects/mlip_phonons/results/mace-omat-0-medium/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=0.999108  min=0.999108  E_freq=0.491352  E_freq_rel=0.057103  E_vec=0.390582
+  AvgProjPowX coupling modes subspace scores X: mean=0.538476  min=0.538476  max=0.538476
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.187187  wθ_mean=5.423982  w(1-σ^2)_mean=0.031991
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=0.999108  E_freq=0.491352  E_freq_rel=0.057103  E_vec=0.390582
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.538476  k_dft=13  k_ml=11  σ_min=0.005974  σ_mean=0.670666  θ_mean=34.487°  θ_max=89.658°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.187187  wθ=5.423982  w(1-σ^2)=0.031991
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.623071    3.255°   63.000°   0.898705
+        5     3   10.942293   11.367780   0.264235   0.194421    8.240°   11.592°   0.557351
+        6    16   12.418793   13.775959   0.027630   0.017799    5.790°   52.402°   0.819584
+        7     7   15.656533   16.109659   0.029404   0.024564   17.951°   89.995°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.048321   18.585°   89.946°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.017219    6.410°   18.502°   0.583053
+
+Model: /home/rnpla/projects/mlip_phonons/results/mattersim-v1.0.0-1M/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=1.087501  min=1.087501  E_freq=0.631274  E_freq_rel=0.069844  E_vec=0.350944
+  AvgProjPowX coupling modes subspace scores X: mean=0.662776  min=0.662776  max=0.662776
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.178575  wθ_mean=5.644725  w(1-σ^2)_mean=0.052658
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=1.087501  E_freq=0.631274  E_freq_rel=0.069844  E_vec=0.350944
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.662776  k_dft=13  k_ml=12  σ_min=0.000465  σ_mean=0.748620  θ_mean=28.963°  θ_max=89.973°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.178575  wθ=5.644725  w(1-σ^2)=0.052658
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.616356    4.178°   16.219°   0.573357
+        5     3   10.942293   11.367780   0.264235   0.197228    7.000°   11.717°   0.557718
+        6    16   12.418793   13.775959   0.027630   0.020162    3.385°   12.829°   0.561137
+        7     7   15.656533   16.109659   0.029404   0.016826   18.084°   89.995°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.042559   19.483°   89.998°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.031946    9.781°   89.041°   0.999860
+
+Model: /home/rnpla/projects/mlip_phonons/results/mattersim-v1.0.0-5M/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=1.087599  min=1.087599  E_freq=0.631273  E_freq_rel=0.069844  E_vec=0.351020
+  AvgProjPowX coupling modes subspace scores X: mean=0.662705  min=0.662705  max=0.662705
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.178577  wθ_mean=5.644675  w(1-σ^2)_mean=0.052657
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=1.087599  E_freq=0.631273  E_freq_rel=0.069844  E_vec=0.351020
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.662705  k_dft=13  k_ml=12  σ_min=0.000466  σ_mean=0.748576  θ_mean=28.968°  θ_max=89.973°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.178577  wθ=5.644675  w(1-σ^2)=0.052657
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.616357    4.178°   16.219°   0.573357
+        5     3   10.942293   11.367780   0.264235   0.197224    6.999°   11.716°   0.557715
+        6    16   12.418793   13.775959   0.027630   0.020165    3.384°   12.829°   0.561137
+        7     7   15.656533   16.109659   0.029404   0.016824   18.084°   89.995°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.042557   19.483°   89.998°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.031946    9.780°   89.040°   0.999860
+
+Model: /home/rnpla/projects/mlip_phonons/results/orb-d3-sm-v2/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=9.596367  min=9.596367  E_freq=8.392233  E_freq_rel=0.874040  E_vec=0.926257
+  AvgProjPowX coupling modes subspace scores X: mean=0.306365  min=0.306365  max=0.306365
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.765035  wθ_mean=49.578236  w(1-σ^2)_mean=0.615075
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=9.596367  E_freq=8.392233  E_freq_rel=0.874040  E_vec=0.926257
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.306365  k_dft=13  k_ml=15  σ_min=0.001978  σ_mean=0.423752  θ_mean=61.505°  θ_max=89.887°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.765035  wθ=49.578236  w(1-σ^2)=0.615075
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.099793   37.907°   87.842°   0.999291
+        5     3   10.942293   11.367780   0.264235   0.011773   81.430°   90.000°   1.000000
+        6    16   12.418793   13.775959   0.027630   0.061423   75.315°   90.000°   1.000000
+        7     7   15.656533   16.109659   0.029404   0.028244   78.238°   89.937°   0.999999
+        9    49   18.030717   20.682009   0.034739   0.056223   55.219°   90.000°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.008673   52.934°   83.796°   0.994167
+
+Model: /home/rnpla/projects/mlip_phonons/results/orb-v3-conservative-inf-omat/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=1.802689  min=1.802689  E_freq=1.176082  E_freq_rel=0.141564  E_vec=0.482005
+  AvgProjPowX coupling modes subspace scores X: mean=0.468044  min=0.468044  max=0.468044
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.672223  wθ_mean=4.851021  w(1-σ^2)_mean=0.149397
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=1.802689  E_freq=1.176082  E_freq_rel=0.141564  E_vec=0.482005
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.468044  k_dft=13  k_ml=9  σ_min=0.017817  σ_mean=0.723101  θ_mean=32.055°  θ_max=88.979°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.672223  wθ=4.851021  w(1-σ^2)=0.149397
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.004663    3.997°   66.922°   0.924154
+        5     3   10.942293   11.367780   0.264235   0.157484    5.965°    6.812°   0.546228
+        6    16   12.418793   13.775959   0.027630   0.017661    4.769°   33.536°   0.672259
+        7     7   15.656533   16.109659   0.029404   0.025166   15.527°   69.056°   0.936789
+        9    49   18.030717   20.682009   0.034739   0.033849   10.871°   89.725°   0.999988
+       16    17   31.176752   35.012994   0.023934   0.038304    6.181°   22.017°   0.600177
+
+Model: /home/rnpla/projects/mlip_phonons/results/orb-v3-direct-omat/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=0.969945  min=0.969945  E_freq=0.430380  E_freq_rel=0.048464  E_vec=0.415050
+  AvgProjPowX coupling modes subspace scores X: mean=0.765116  min=0.765116  max=0.765116
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.197317  wθ_mean=12.590532  w(1-σ^2)_mean=0.122844
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=0.969945  E_freq=0.430380  E_freq_rel=0.048464  E_vec=0.415050
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.765116  k_dft=13  k_ml=20  σ_min=0.044133  σ_mean=0.810835  θ_mean=26.984°  θ_max=87.471°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.197317  wθ=12.590532  w(1-σ^2)=0.122844
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.576492    3.842°   18.725°   0.584065
+        5     3   10.942293   11.367780   0.264235   0.171825   37.061°   90.000°   1.000000
+        6    16   12.418793   13.775959   0.027630   0.030233    6.408°   50.140°   0.801546
+        7     7   15.656533   16.109659   0.029404   0.008635    8.220°   19.616°   0.588200
+        9    49   18.030717   20.682009   0.034739   0.052041    4.917°   79.488°   0.983402
+       16    17   31.176752   35.012994   0.023934   0.052342    5.461°   16.436°   0.574228
+
+Model: /home/rnpla/projects/mlip_phonons/results/pet-mad-s-v1.1.0/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=9.408333  min=9.408333  E_freq=8.550760  E_freq_rel=0.782129  E_vec=0.659671
+  AvgProjPowX coupling modes subspace scores X: mean=0.373738  min=0.373738  max=0.373738
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.795087  wθ_mean=60.247295  w(1-σ^2)_mean=0.656717
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=9.408333  E_freq=8.550760  E_freq_rel=0.782129  E_vec=0.659671
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.373738  k_dft=13  k_ml=11  σ_min=0.007355  σ_mean=0.511325  θ_mean=51.461°  θ_max=89.579°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.795087  wθ=60.247295  w(1-σ^2)=0.656717
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.076504   50.226°   90.000°   1.000000
+        5     3   10.942293   11.367780   0.264235   0.034273   87.641°   88.256°   0.999537
+        6    16   12.418793   13.775959   0.027630   0.005583   85.607°   90.000°   1.000000
+        7     7   15.656533   16.109659   0.029404   0.002157   87.283°   90.000°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.006994   86.892°   89.822°   0.999995
+       16    17   31.176752   35.012994   0.023934   0.000011   82.864°   82.864°   0.992294
+
+Model: /home/rnpla/projects/mlip_phonons/results/pet-omad-l-v0.1.0/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=13.071580  min=13.071580  E_freq=12.047831  E_freq_rel=0.742900  E_vec=0.787500
+  AvgProjPowX coupling modes subspace scores X: mean=0.384124  min=0.384124  max=0.384124
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.738611  wθ_mean=43.801000  w(1-σ^2)_mean=0.487654
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=13.071580  E_freq=12.047831  E_freq_rel=0.742900  E_vec=0.787500
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.384124  k_dft=13  k_ml=11  σ_min=0.018985  σ_mean=0.556220  θ_mean=50.010°  θ_max=88.912°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.738611  wθ=43.801000  w(1-σ^2)=0.487654
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.116812   20.870°   90.000°   1.000000
+        5     3   10.942293   11.367780   0.264235   0.026333   84.439°   87.589°   0.999115
+        6    16   12.418793   13.775959   0.027630   0.029176   88.227°   89.915°   0.999999
+        7     7   15.656533   16.109659   0.029404   0.009545   87.451°   89.185°   0.999899
+        9    49   18.030717   20.682009   0.034739   0.003225   87.574°   90.000°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.000000   90.000°   90.000°   nan
+
+Model: /home/rnpla/projects/mlip_phonons/results/pet-omad-s-v1.0.0/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=2.504070  min=2.504070  E_freq=1.792995  E_freq_rel=0.213416  E_vec=0.546980
+  AvgProjPowX coupling modes subspace scores X: mean=0.498711  min=0.498711  max=0.498711
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.711743  wθ_mean=8.413731  w(1-σ^2)_mean=0.162386
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=2.504070  E_freq=1.792995  E_freq_rel=0.213416  E_vec=0.546980
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.498711  k_dft=13  k_ml=13  σ_min=0.000253  σ_mean=0.539575  θ_mean=47.948°  θ_max=89.986°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.711743  wθ=8.413731  w(1-σ^2)=0.162386
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.023552    8.064°   69.853°   0.941266
+        5     3   10.942293   11.367780   0.264235   0.125102    9.815°   11.954°   0.558421
+        6    16   12.418793   13.775959   0.027630   0.020560    8.550°   40.894°   0.727643
+        7     7   15.656533   16.109659   0.029404   0.003210   10.363°   22.190°   0.601089
+        9    49   18.030717   20.682009   0.034739   0.051371    9.022°   90.000°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.029532   25.312°   89.624°   0.999979
+
+Model: /home/rnpla/projects/mlip_phonons/results/pet-omat-l-v1.0.0/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=1.421401  min=1.421401  E_freq=0.895533  E_freq_rel=0.104516  E_vec=0.404514
+  AvgProjPowX coupling modes subspace scores X: mean=0.553788  min=0.553788  max=0.553788
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.672103  wθ_mean=13.210332  w(1-σ^2)_mean=0.154555
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=1.421401  E_freq=0.895533  E_freq_rel=0.104516  E_vec=0.404514
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.553788  k_dft=13  k_ml=12  σ_min=0.005056  σ_mean=0.633562  θ_mean=37.975°  θ_max=89.710°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.672103  wθ=13.210332  w(1-σ^2)=0.154555
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.074747    4.433°   73.922°   0.961894
+        5     3   10.942293   11.367780   0.264235   0.081419   34.479°   90.000°   1.000000
+        6    16   12.418793   13.775959   0.027630   0.019502    5.856°   48.324°   0.786970
+        7     7   15.656533   16.109659   0.029404   0.020859   16.341°   86.163°   0.997762
+        9    49   18.030717   20.682009   0.034739   0.031682   24.936°   89.957°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.027570    8.115°   17.477°   0.578559
+
+Model: /home/rnpla/projects/mlip_phonons/results/pet-omat-m-v1.0.0/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=0.973523  min=0.973523  E_freq=0.271346  E_freq_rel=0.026675  E_vec=0.540136
+  AvgProjPowX coupling modes subspace scores X: mean=0.660771  min=0.660771  max=0.660771
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.120955  wθ_mean=5.739891  w(1-σ^2)_mean=0.032010
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=0.973523  E_freq=0.271346  E_freq_rel=0.026675  E_vec=0.540136
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.660771  k_dft=13  k_ml=14  σ_min=0.001398  σ_mean=0.692005  θ_mean=34.714°  θ_max=89.920°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.120955  wθ=5.739891  w(1-σ^2)=0.032010
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.532269    3.557°   42.817°   0.742820
+        5     3   10.942293   11.367780   0.264235   0.216464    9.499°   14.370°   0.566359
+        6    16   12.418793   13.775959   0.027630   0.032303    5.463°   50.263°   0.802536
+        7     7   15.656533   16.109659   0.029404   0.006593    7.836°   30.894°   0.653865
+        9    49   18.030717   20.682009   0.034739   0.053160   22.725°   89.921°   0.999999
+       16    17   31.176752   35.012994   0.023934   0.042815    5.674°   20.591°   0.592922
+
+Model: /home/rnpla/projects/mlip_phonons/results/pet-omat-xl-v1.0.0/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=1.774417  min=1.774417  E_freq=1.105344  E_freq_rel=0.135703  E_vec=0.514672
+  AvgProjPowX coupling modes subspace scores X: mean=0.289872  min=0.289872  max=0.289872
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.776528  wθ_mean=18.839975  w(1-σ^2)_mean=0.488936
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=1.774417  E_freq=1.105344  E_freq_rel=0.135703  E_vec=0.514672
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.289872  k_dft=13  k_ml=5  σ_min=0.016217  σ_mean=0.779112  θ_mean=27.162°  θ_max=89.071°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.776528  wθ=18.839975  w(1-σ^2)=0.488936
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.021978   12.379°   75.130°   0.967252
+        5     3   10.942293   11.367780   0.264235   0.069559   34.878°   90.000°   1.000000
+        6    16   12.418793   13.775959   0.027630   0.014452   13.650°   90.000°   1.000000
+        7     7   15.656533   16.109659   0.029404   0.000862   69.992°   90.000°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.017909   10.766°   90.000°   1.000000
+       16    17   31.176752   35.012994   0.023934   0.019321    5.099°   14.068°   0.565294
+
+Model: /home/rnpla/projects/mlip_phonons/results/small-omat-0/cbvn/raw/Plumipy_Files/band.yaml
+  dQ score: mean=1.174055  min=1.174055  E_freq=0.628945  E_freq_rel=0.065520  E_vec=0.419315
+  AvgProjPowX coupling modes subspace scores X: mean=0.458567  min=0.458567  max=0.458567
+  Coupling cluster (eigenspaces) subspace scores: L1w_mean=0.244902  wθ_mean=5.690790  w(1-σ^2)_mean=0.041833
+  Per-q dQ score (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  Score=1.174055  E_freq=0.628945  E_freq_rel=0.065520  E_vec=0.419315
+  Per-q AvgProjPowX angles (summary):
+    q=[ 0.000000,  0.000000,  0.000000]  X=0.458567  k_dft=13  k_ml=10  σ_min=0.011010  σ_mean=0.638864  θ_mean=37.992°  θ_max=89.369°
+  Per-q coupling cluster stats:
+    q=[ 0.000000,  0.000000,  0.000000]  L1w=0.244902  wθ=5.690790  w(1-σ^2)=0.041833
+      cid  size  fmin        fmax        w_dft     w_ml      θ_mean    θ_max     θ_min
+        4    35   6.550634   9.632476   0.540667   0.660824    2.425°   18.388°   0.582541
+        5     3   10.942293   11.367780   0.264235   0.169903   10.154°   13.756°   0.564211
+        6    16   12.418793   13.775959   0.027630   0.018534    6.351°   61.638°   0.889272
+        7     7   15.656533   16.109659   0.029404   0.025030   18.243°   89.995°   1.000000
+        9    49   18.030717   20.682009   0.034739   0.044923   21.927°   89.873°   0.999998
+       16    17   31.176752   35.012994   0.023934   0.017175    9.325°   21.037°   0.595147
+
+FINAL RANKING (lower dQ Score is better)
+----------------------------------------
+rank  Score_mean    E_freq      E_vec       E_freq_rel   X_mean      model
+   1    0.969945   0.430380   0.415050     0.048464   0.765116  orb-v3-direct-omat
+   2    0.973523   0.271346   0.540136     0.026675   0.660771  pet-omat-m-v1.0.0
+   3    0.975993   0.508419   0.359672     0.045925   0.553110  mace-matpes-r2scan-omat-ft
+   4    0.999108   0.491352   0.390582     0.057103   0.538476  mace-omat-0-medium
+   5    1.087501   0.631274   0.350944     0.069844   0.662776  mattersim-v1.0.0-1M
+   6    1.087599   0.631273   0.351020     0.069844   0.662705  mattersim-v1.0.0-5M
+   7    1.174055   0.628945   0.419315     0.065520   0.458567  small-omat-0
+   8    1.421401   0.895533   0.404514     0.104516   0.553788  pet-omat-l-v1.0.0
+   9    1.476293   0.833172   0.494708     0.043442   0.436489  TensorNetDGL-MatPES-r2SCAN-v2025.1-PES
+  10    1.528758   0.974075   0.426679     0.093157   0.544434  mace-matpes-pbe-omat-ft
+  11    1.774417   1.105344   0.514672     0.135703   0.289872  pet-omat-xl-v1.0.0
+  12    1.802689   1.176082   0.482005     0.141564   0.468044  orb-v3-conservative-inf-omat
+  13    1.812293   1.047904   0.587991     0.104396   0.235390  TensorNetDGL-MatPES-PBE-v2025.1-PES
+  14    2.504070   1.792995   0.546980     0.213416   0.498711  pet-omad-s-v1.0.0
+  15    5.862976   4.842523   0.784964     0.379993   0.425238  CHGNet-MatPES-PBE-2025.2.10-2.7M-PES
+  16    5.925198   5.127700   0.613460     0.447990   0.317461  M3GNet-MatPES-r2SCAN-v2025.1-PES
+  17    6.535556   5.732048   0.618083     0.356611   0.536645  CHGNet-MPtrj-2023.12.1-2.7M-PES
+  18    6.778403   5.982676   0.612097     0.288561   0.326966  mace-mpa-0-medium
+  19    7.415465   6.436802   0.752818     0.471850   0.134123  CHGNet-MPtrj-2024.2.13-11M-PES
+  20    9.408333   8.550760   0.659671     0.782129   0.373738  pet-mad-s-v1.1.0
+  21    9.596367   8.392233   0.926257     0.874040   0.306365  orb-d3-sm-v2
+  22    9.936405   8.903370   0.794642     0.659815   0.559477  M3GNet-MP-2021.2.8-PES
+  23   10.927271  10.038709   0.683509     0.632255   0.466293  CHGNet-MatPES-r2SCAN-2025.2.10-2.7M-PES
+  24   13.071580  12.047831   0.787500     0.742900   0.384124  pet-omad-l-v0.1.0
+  25   13.872716  12.897500   0.750167     1.079009   0.456099  M3GNet-MP-2021.2.8-DIRECT-PES
