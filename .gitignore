@@ -26,6 +26,7 @@ assets/models/**
 !assets/models/mace/ivac0_neb_ft.model
 !assets/models/mace/mace-mpa-0-medium.model
 !assets/models/MODELS.md
+!assets/structures/NEB
 
 .cache/
 
