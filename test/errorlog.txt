@@ -6,3 +6,5 @@ mace-mpa-0-medium failed. error is Calculator does not expose supported elements
 mace-matpes-pbe-omat-ft failed. error is Calculator does not expose supported elements via `calc.element_types`.. Moving on to next model.
 M3GNet-ANI-1x-Subset-PES failed. error is 'B'. Moving on to next model.
 M3GNet-MatPES-PBE-v2025.1-PES failed. error is 'B'. Moving on to next model.
+mace-mpa-0-medium failed. error is name '_ints_from_any' is not defined. Moving on to next model.
+mace-mpa-0-medium failed. error is name '_ints_from_any' is not defined. Moving on to next model.

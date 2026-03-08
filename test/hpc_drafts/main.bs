@@ -1,11 +1,12 @@
 #!/usr/bin/env bash 
+
 set -euo pipefail
 # My current most modern script for hpc use but it uses sequential execution
 
 cd /scratch/user/s4802880/mlip_phonons
 
 module purge
-module load iniforge/25.3.0-3 # fix this version as needed
+module load miniforge/25.3.0-3 # fix this version as needed
 source "$ROOTMINIFORGE/etc/profile.d/conda.sh"
 
 export XDG_CACHE_HOME="/scratch/user/$USER/.cache"

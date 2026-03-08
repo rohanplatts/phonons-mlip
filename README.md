@@ -4,14 +4,12 @@ Compute phonons (Phonopy) using a variety of ML interatomic potentials (ASE calc
 
 ## Install
 
-#TODO: WORK ON README
 From the repo root:
 ```bash
 python -m pip install -e .
 ```
 
 Optional model backends (install what you need):
-#TODO: TEST THESE
 
 If these do not work, see env/ENVIRONMENTS.md
 
@@ -89,30 +87,7 @@ Reports are printed and also saved to `resultsPhonCoupling/phonon_coupling_repor
 
 
 
-## 18/02 feedback 
 
-Check with mace dispersion = True. see the performance between 
-
-also check just calculating the d3 term with ase. 
-Read up on the fine tuning strategies optimal for singularly NEB and Phonons. 
-
-_focus on one or two families of models and try series of fine tuning strategies. 
-
-have a look at connor's RDM for the data. 
-
-in principle i should be able to leave the minimisation. 
- 
-check the output of the hungarian minimisation and that it is operating properly. 
-
-next step is to clean up the repo and check that it is working for connors defect calculations. get it ready for actual industrial application. 
-
-look at reproducing the structures with mlip. (shake n break/brake) 
-
-We need to test this on a bunch of different defects and paths. 
-
-fine tuning techniques for the top models. 
-
-after this, molecular dynamics. _
 
 
 

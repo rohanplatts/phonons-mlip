@@ -90,7 +90,7 @@ def read_poscar(path: Union[str, Path]) -> Structure:
 
  
 def _extract_masses(data: Mapping[str, Any], natom: int) -> Optional[List[float]]:
-    """Extract atomic masses from a phonopy band.yaml payload. they are stored per 
+    """Extract atomic masses from a phonopy band.yaml file. they are stored per 
     'point' in the file, we need an array of them indexed with the indexed atoms.
 
     Args:
@@ -174,22 +174,10 @@ def _parse_floats(line: str, n: int) -> List[float]:
 
 
  
-def _all_int(tokens: Sequence[str]) -> bool:
-    """Return True if all tokens can be parsed as integers.
-    Helper for 'read_poscar' to decipher element symbols vs counts.
-    (vasp can swap)
-
-    Args:
-        tokens (Sequence[str]): Tokens to check.
-
-    Returns:
-        bool: True if all tokens are integers, else False.
-    """
-
-    # True only if every token parses as int
-    if not tokens:
+def _all_int(things: Sequence[str]) -> bool:
+    if not things:
         return False
-    for t in tokens:
+    for t in things:
         try:
             int(t)
         except Exception:

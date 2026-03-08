@@ -25,7 +25,6 @@ executive:
     "contcar_gs_plumipy": "{base}_CONTCAR_GS"
     "outcar_gs_plumipy": "{base}_OUTCAR_GS"
 
-#TODO: make naming per operation. As in, make default_name_templates a dictionary of dictionaries with files pertaining to the 'phonon' operation grouped together in their sub dictionary. 
 
 # ════════════════════════════════════════════════════════════════════════
 # Path configuration (all paths are relative to this config file unless absolute)

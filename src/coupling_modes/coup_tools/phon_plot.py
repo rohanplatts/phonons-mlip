@@ -53,7 +53,6 @@ def render_report(
         lines.append(f"  q[{i}] index={qi}  pos={fmt_q(c.q_positions[i])}")
     lines.append("")
 
-    # DFT-side sanity preview of projection weights
     h("DFT Coupling modes  (per mode) ")
     for i, qi in enumerate(c.q_indices):
         leg = c.AvgProjPowX_by_q[i]
@@ -150,7 +149,7 @@ def render_report(
                     f"{cl['theta_mean_deg']:7.3f}°  {cl['theta_max_deg']:7.3f}°  {np.cos(sig_min): .6f}"
                 )
         lines.append("")
-    # Final ranking table (primary: dQ Score_mean; fallback: AvgProjPowX X_mean).
+    # Final ranking table dQ Score_mean; fallback: AvgProjPowX X_mean).
     ranking_rows: List[Tuple[float, float, str]] = []
     for ml_path, res in out.results_per_ml.items():
         g_sum = res.get("gses", {}).get("summary", {})
