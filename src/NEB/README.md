@@ -16,6 +16,9 @@ Obtain the minimum energy path (MEP) via the nudged elastic band method for an a
 
 ```bash
 mlip-neb
+
+OR 
+
 mlip-neb <model_name> --poscar-i path/to/POSCAR_i --poscar-f path/to/POSCAR_f
 ```
 
@@ -44,7 +47,7 @@ If the base results root already exists and `--overwrite` is not set, a suffixed
   - `neb_ci.traj`, `neb_ci.log` (climbing image path)
   - `neb_raw.npz` (arrays + metadata)
   - `summary.txt` (human‑readable summary)
-  - `vasp_mlip_d3/00..0(N+1)/POSCAR` (pre‑CI VASP‑ready path)
+  - `vasp_mlip_d3/00..0(N+1)/POSCAR` (pre‑climbing-image VASP‑ready path)
   - `vasp_ci/00..0(N+1)/POSCAR` (climbing‑image VASP‑ready path)
 
 ## VASP Export Requirements
@@ -61,7 +64,8 @@ vasp_neb/
 └── 0(N+1)/POSCAR
 ```
 
-If you pass `--vasp-inputs-dir`, these three files are copied into `vasp_mlip_d3/` and `vasp_ci/`. If you do not pass that vasp input directory, then the minimum vasp loadable POTCAR and INCAR are created, with KPOINTS skipped by setting `KGAMMA = .TRUE.`
+If you pass `--vasp-inputs-dir`, these three files are copied into `vasp_mlip_d3/` and `vasp_ci/`. If you do not pass that vasp input directory, then:
+TO BE IMPLEMENTED: the minimum vasp loadable POTCAR and INCAR are created, with KPOINTS skipped by setting `KGAMMA = .TRUE.`
 
 ## Finding the MEP via MANY models
 
