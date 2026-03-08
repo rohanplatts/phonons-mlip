@@ -22,13 +22,10 @@ venv/
 
 
 # MLIP or MACE model files
-*.model
-*.pt
-*.h5
-*.pth
-*.npz
-*.ckpt
-*.pth
+assets/models/**
+!assets/models/mace/ivac0_neb_ft.model
+!assets/models/mace/mace-mpa-0-medium.model
+!assets/models/MODELS.md
 
 .cache/
 
@@ -45,4 +42,8 @@ venv/
 *.traj
 *.json
 
+results*
+results*/*
 
+logs/
+assets/training_data
