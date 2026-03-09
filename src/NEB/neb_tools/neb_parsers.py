@@ -30,6 +30,31 @@ def resolve_path(root: Path, value: str | Path | None) -> Path | None:
     return root / p
 
 
+def resolve_config_path(config_path: Path | None, *, repo_root: Path | None = None) -> Path:
+    if config_path is not None:
+        resolved = config_path.expanduser().resolve()
+        if not resolved.exists():
+            raise FileNotFoundError(f"Missing config file: {resolved}")
+        return resolved
+
+    candidates = [(Path.cwd() / "config.yml").expanduser().resolve()]
+    resolved_repo_root = (
+        Path(repo_root).expanduser().resolve()
+        if repo_root is not None
+        else Path(__file__).resolve().parents[3]
+    )
+    repo_candidate = (resolved_repo_root / "config.yml").resolve()
+    if repo_candidate not in candidates:
+        candidates.append(repo_candidate)
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    checked = ", ".join(str(candidate) for candidate in candidates)
+    raise FileNotFoundError(f"Missing config.yml. Checked: {checked}. Use --config to specify one explicitly.")
+
+
 def image_dirs(root: Path) -> list[Path]:
     return sorted([p for p in root.iterdir() if p.is_dir() and p.name.isdigit()])
 

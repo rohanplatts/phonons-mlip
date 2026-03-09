@@ -32,7 +32,7 @@ Arguments:
 
 - `model_name`: optional model key from `config.yml -> models`.
 - `--structure`: optional override for the structure key under `structures.pure` or `structures.defects`.
-- `--config`: path to `config.yml` (default `./config.yml`). I will omit this eventually as it is quite redundant. 
+- `--config`: path to `config.yml` (default `<repo>/config.yml`). 
 
 If `--structure` is omitted, the code uses `mlip_phonons.defaults.structure` first, then `models.<model>.material` as a fallback. That `material` field is effectively a legacy name for the model's default structure key.
 
@@ -132,4 +132,3 @@ Support is not automatic; the model name must be explicitly registered in [get_c
 ## Current issues
 
 - [main.py](main.py) currently hard-requires CUDA and sets Torch's default device to `cuda`.
-

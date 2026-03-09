@@ -12,7 +12,7 @@ from pathlib import Path
 
 import argparse
 
-from NEB.neb_tools.neb_parsers import copy_vasp_inputs, image_dirs, load_yaml, resolve_path
+from NEB.neb_tools.neb_parsers import copy_vasp_inputs, image_dirs, load_yaml, resolve_config_path, resolve_path
 
 
 def _model_dirs(results_root: Path, model_name: str | None) -> list[Path]:
@@ -56,9 +56,9 @@ def _write_run_script(vasp_dir: Path, run_cmd: str) -> Path:
 
 def main(argv: list[str] | None = None) -> int:
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("--config", type=Path, default=Path.cwd() / "config.yml")
+    pre_parser.add_argument("--config", type=Path, default=None)
     pre_args, _ = pre_parser.parse_known_args(argv)
-    config_path = pre_args.config.expanduser().resolve()
+    config_path = resolve_config_path(pre_args.config)
     config = load_yaml(config_path)
     run_root = config_path.parent
 

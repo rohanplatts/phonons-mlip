@@ -24,6 +24,7 @@ import yaml
 
 from NEB.neb_tools.neb_parsers import (
     load_poscar_forces_from_dft_run,
+    resolve_config_path,
     load_yaml,
     resolve_path,
 )
@@ -301,9 +302,9 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
     _ensure_src_on_path(repo_root)
 
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("--config", type=Path, default=Path.cwd() / "config.yml")
+    pre_parser.add_argument("--config", type=Path, default=None)
     pre_args, _ = pre_parser.parse_known_args(argv)
-    config_path = pre_args.config.expanduser().resolve()
+    config_path = resolve_config_path(pre_args.config, repo_root=repo_root)
     config = load_yaml(config_path)
     run_root = config_path.parent
 

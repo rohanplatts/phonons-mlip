@@ -5,7 +5,7 @@ __pycache__/
 *.py[cod]
 *.so
 
-scripts/phonons/cache.*
+cache.*
 
 .env/
 .venv/
@@ -27,6 +27,8 @@ assets/models/**
 !assets/models/mace/ivac0_neb_ft_compiled.model
 !assets/models/mace/mace-mpa-0-medium.model
 !assets/models/MODELS.md
+
+assets/structures/**
 !assets/structures/NEB
 
 .cache/
@@ -37,17 +39,8 @@ test/**
 #assets/models/**
 #results/**
 
-# Forgot to let it ignore the structures:
-*.poscar
-
-
-# forgot to block the data files. Keep the input files. 
-*.png
-*.traj
-*.json
-
 results*
-results*/*
+results*/**
 
 logs/
 assets/training_data

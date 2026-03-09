@@ -69,9 +69,9 @@ TO BE IMPLEMENTED: the minimum vasp loadable POTCAR and INCAR are created, with 
 
 ## Finding the MEP via MANY models
 
-If you would like to compare the MEPs for multiple MLIPs, then you will not want to have to run mlip-neb multiple times. That would be annoying. For this reason I have a BASH script main_neb.bs that reads the list of models you want to evaluate from config.yml `models` list, reads the environment that is defined under the specific model, activates that environment, and then runs `mlip-neb <model_name>`. Your default values will be pulled from config.yml and used as the settings for that MEP calculation. 
+If you would like to compare the MEPs for multiple MLIPs, then you will not want to have to run mlip-neb multiple times. That would be annoying. For this reason I have a BASH script main_neb.bs that reads the list of models you want to evaluate from config.yml `models` list, reads the environment that is defined under the specific model, activates that environment (WITH CONDA!), and then runs `mlip-neb <model_name>`. Your default values will be pulled from config.yml and used as the settings for that MEP calculation. 
 
-This will give you all of the MEP paths as calculated from NEB on the potential energy surface of all of the MLIPs. You can then compare the outputs of the models:
+This will give you all of the MEP paths as calculated from NEB on the potential energy surface of all of the MLIPs. You can then compare the outputs of the models.
 
 ## Comparing & Ranking
 
@@ -101,14 +101,14 @@ Outputs:
 ## Prepare VASP Single-Point Inputs
 
 To compare against DFT single-point energies on the MLIP path, first prepare a VASP-ready folder
-that you can copy to an HPC:
+that you can copy to HPC:
 
 ```bash
 python src/NEB/NEB_prepare_vasp_singlepoints.py \
   --results-root resultsNEB \
   --model <model_name> \
   --path vasp_ci \
-  --vasp-inputs-dir path/to/vasp_inputs
+  --vasp-inputs-dir path/to/vasp_inputs 
 ```
 
 This copies `INCAR/KPOINTS/POTCAR` into each image folder and writes a helper
