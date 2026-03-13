@@ -42,6 +42,8 @@ test/**
 results*
 results*/**
 
+src/coupling_modes/PHONONCOUPLING.md
+
 logs/
 assets/training_data
 results

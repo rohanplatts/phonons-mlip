@@ -54,7 +54,7 @@ mlip_phonons:
 neb:
   defaults:
     model_name: ivac0_neb_ft  # Default model when `mlip-neb` is run without a model argument.
-    results_root: resultsNEB123  # Base output directory for NEB runs; if a folder of model data exists within it, it by default creates and writes to a sibling folder.
+    results_root: resultsNEB  # Base output directory for NEB runs; if a folder of model data exists within it, it by default creates and writes to a sibling folder.
     models_root: assets/models  # Root directory passed to `get_calc_object` to locate the MLIP checkpoint/weights for `model_name`.
     # can also be the actual folder the model is in, it is just left like this so that, in general, when you have several model families, 
     # one #does not need a crap tonne of conditionals for listing various models_root just to operate several #families of models)
