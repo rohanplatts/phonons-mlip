@@ -1,5 +1,7 @@
 #TODO: write models.md
 
+The currently supported / tested models are listed in config.yml in the 'models' dictionary. 
+
 # below are notes this readme is very incomplete. 
 
 Some instructions however are still available under [MODELS_CALC.md](src/mlip_phonons/MODELS_CALC.md). 
