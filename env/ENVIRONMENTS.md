@@ -1,67 +1,41 @@
 
 Last update: 31/01/2026. 
 
-Models are not always mutually compatible. However, ASE is the standard for atomic work, consequently most models have a described method (in their documentation) by which one can access the model as an ASE calculator object. Thus, models most often are supported for ASE. 
+Models are not always mutually compatible. However, ASE is the standard for atomic work, consequently most models have a described method (in their documentation) by which one can access the model as an ASE calculator object. Thus, models most often are supported for ASE. Regardless, the fact the model families are not necessarily mutually compatible motivates the requirement for separate environments dedicated to compatible model families. If you are planning however to do large model sweeps, this should not inconvenience you, since the supplied bash scripts do model sweeps based upon the `config.yml` file, which list the models and points to the correct environment for them. 
 
-It is best to assume that the models are not compatible, however of course many of them are. MACE, orb-models, PET-mad are compatible, thus i have a dedicated environment to those. I have a second environment for MatterSim, and a separate environment for the MATGL models. 
+For the current set of included model families, the environments are as follows:
 
-It does not ultimately matter if a model is incompatible with another, as seen in the configuration file, for every new model you add to this project, you also point it to the name of the environment for which that model runs in. NOTE: ASE and PHONOPY must be installed into that environment as well. This should raise no dependency conflicts. 
-
-For the models i have currently implemented, i have attached their .yml files. However, if these do not work for one reason or another, the exact installations i ran in terminal to obtain these environments are as follows: 
-
-NOTE: install this package first. Clone the repository, cd to the project directory, and for each environment (for each model) you use,  run: 
-
-NOTE: currently, to implement NEB path detection benchmarking, i needed to implemenet d3 term correction. I tried this initialy with a pip install of DFTD3, however this took way too long and didnt come with the native OpenMP libraries (libgomp.so.1), so i uninstalled these and then used the conda-forge channel to reinstall DFTD3. Thus you will see that i have installed using conda forge after my pip installations, which is sub ideal. however the below is attached as a direct command for command step by step as to what i ran to obtain my environments, hence i have included these steps. NOTE that i will in due time reconstruct all environments systematically and test everything is still working. 
-
+## MACE, orb-materials, PET-mad model families:
+From repo root:
 ```
+conda deactivate
+conda env create -f env/mace_env.yml
+conda activate mace_env
 pip install -e . 
 ```
 
-
-mace_env installs:
-
+## MATTERSIM model family:
+from repo root: 
 ```
-conda create --name mace_env python=3.10 pip 
-pip install mace-torch 
-conda install -c conda-forge phonopy
-pip install upet
-pip install orb-models
-pip install "pynanoflann@git+https://github.com/dwastberg/pynanoflann#egg=af434039ae14bedcbb838a7808924d6689274168"
-pip install dftd3
-pip uninstall -y dftd3 dftd3-python simple-dftd3
-conda remove -y dftd3-python simple-dftd3
-conda install -y -c conda-forge dftd3-python simple-dftd3
+conda deactivate
+conda env create -f env/mattersim_env.yml
+conda activate mattersim_env
+pip install -e .
 ```
 
-matgl_env installs: 
-
+## MATGL model families:
+> I.e. M3GNet, TENSORNET, CHGNet
+from repo root:
 ```
-conda create --name matgl_env python=3.10 pip
-pip install torch --index-url https://download.pytorch.org/whl/cu121
-pip install dgl -f https://data.dgl.ai/wheels/torch-2.2/cu121/repo.html
-pip install matgl
-pip install ase
-pip install phonopy
-pip install dftd3
-pip uninstall -y dftd3 dftd3-python simple-dftd3
-conda remove -y dftd3-python simple-dftd3
-conda install -y -c conda-forge dftd3-python simple-dftd3
+conda deactivate
+conda env create -f env/matgl_env.yml
+conda deactivate mattersim_env
+pip install -e .
 ```
 
-mattersim_env installs: 
+Thats probably all you need to read from here :). 
 
-```
-conda create --name mattersim_env python=3.10 pip 
-pip install mattersim
-pip install phonopy
-pip install dftd3
-pip uninstall -y dftd3 dftd3-python simple-dftd3
-conda remove -y dftd3-python simple-dftd3
-conda install -y -c conda-forge dftd3-python simple-dftd3
-```
-
-NOTE: for the matgl installation, at that time DGL (a matgl backend that governed model tensor operation) was not supported and thus had to be manually installed since the matgl models had not been shifted from dgl to pytorch (PyG) yet. This was january 2026, and may have since changed. If you are getting some backend error with the installation, Read their updates here:
-https://matgl.ai/#major-update-v200-nov-12-2025 you should be check for which backend (PyG or DGL) your model uses and install that. If the installation is messy and not working, i found these tips helpful:
+> NOTE FOR MATGL ENVIRONMENT INSTALLATION: at that time DGL (a matgl backend that governed model tensor operation) was not supported and thus had to be manually installed since the matgl models had not been shifted from dgl to pytorch (PyG) yet. This was january 2026, and may have since changed. **SO IF YOU ARE GETTING SOME KIND OF BACKEND ERROR FOR MATGL SPECIFICALLY** read their updates [here](https://matgl.ai/#major-update-v200-nov-12-2025). You should be able to check for which backend (PyG or DGL) your model uses and install that. If the installation is messy and not working, i found these tips helpful:
 
 1. install the desired version of torch first 
 2. install the required backend for matgl first 
