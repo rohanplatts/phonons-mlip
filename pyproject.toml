@@ -27,10 +27,11 @@ matgl = ["matgl", "dgl"]
 [project.scripts]
 mlip-phonons = "mlip_phonons.main:main"
 mlip-neb = "NEB.run_neb_raw_v2:main"
+mlip-snb = "defect_landscape.snb.cli:main"
 remap-poscar = "NEB.remap_poscar:main"
 mlip-coup = "coupling_modes.phonon_coupling:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["mlip_phonons", "mlip_phonons.tools", "NEB", "NEB.neb_tools", "coupling_modes.coup_tools"]
+packages = ["mlip_phonons", "mlip_phonons.tools", "NEB", "NEB.neb_tools", "coupling_modes.coup_tools", "defect_landscape", "defect_landscape.snb"]
 include-package-data = true

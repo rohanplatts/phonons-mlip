@@ -1,0 +1,71 @@
+outputs:
+  out_dir: assets/training_data/curated_data/negative_model
+  prefix: negative_all_neb_data_400_samples
+
+sampling:
+  total_count: 400
+
+d3:
+  remove: true
+  method: pbe
+  damping: d3bj
+
+sources:
+  # primary data sets: 
+  - name: g_cspbi3_neb_perturbed_160_atom_path2_i_int_-
+    neb_root: assets/training_data/negative_charge_model/g_cspbi3_neb_perturbed_160_atom_path2_i_int_-/output1
+    weight: 1.0
+    images: ["00", "01", "02", "03", "04"]
+
+  - name: g_cspbi3_neb_unperturbed_80_atom_i_int_-
+    neb_root: assets/training_data/negative_charge_model/g_cspbi3_neb_unperturbed_80_atom_i_int_-/output1
+    weight: 1.0
+    images: ["00", "01", "02", "03", "04", "05", "06", "07"]
+
+  - name: g_cspbi3_neb_unperturbed_80_atom_path2_i_int_-
+    neb_root: assets/training_data/negative_charge_model/g_cspbi3_neb_unperturbed_80_atom_path2_i_int_-/output1
+    weight: 1.0
+    images: ["00", "01", "02", "03", "04"]
+
+  - name: g_cspbi3_neb_unperturbed_80_atom_path2_var_i_int_-
+    neb_root: assets/training_data/negative_charge_model/g_cspbi3_neb_unperturbed_80_atom_path2_var_i_int_-/output1
+    weight: 1.0
+    images: ["00", "01", "02", "03", "04"]
+  
+
+  # Support data sets: 
+  - name: g_cspbi3_neb_perturbed_80_atom_i_int_-
+    neb_root: assets/training_data/negative_charge_model/g_cspbi3_neb_perturbed_80_atom_i_int_-/output1
+    weight: 1.0
+    images: ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09"]
+
+  - name: g_cspbi3_neb_perturbed_160_atom_i_int_-
+    neb_root: assets/training_data/negative_charge_model/g_cspbi3_neb_perturbed_160_atom_i_int_-/output1
+    weight: 1.0
+    images: ["00", "01", "02", "03", "04", "05", "06"]
+
+
+rule:
+  name: force_energy_barrier_bias
+  percentile_bins:
+    - low: 0.00
+      high: 0.20
+      weight: 0.5
+    - low: 0.20
+      high: 0.40
+      weight: 1.0
+    - low: 0.40
+      high: 0.60
+      weight: 2.0
+    - low: 0.60
+      high: 0.80
+      weight: 1.0
+    - low: 0.80
+      high: 1.00
+      weight: 0.5
+
+split:
+  train_pct: 80
+  val_pct: 10
+  test_pct: 10
+  seed: 17

@@ -51,6 +51,31 @@ mlip_phonons:
     model_name: mace-mpa-0-medium
     structure: null
 
+snb:
+  defaults:
+    model_name: mace-mpa-0-medium
+    results_root: resultsSNB
+    models_root: assets/models
+    bulk: null
+    defect: null
+    snb_dir: null
+    oxidation_states: {}
+    vasp_inputs_dir: null
+    prepare_dft: false
+    copy_potcar: false
+    include_vdw: true
+    overwrite: false
+    device: cuda
+    dtype: float32
+  settings:
+    fmax: 0.03
+    max_steps: 600
+    energy_window_eV: 0.50
+    max_clusters_per_model: 10
+    matcher_ltol: 0.2
+    matcher_stol: 0.3
+    matcher_angle_tol: 5
+
 neb:
   defaults:
     model_name: ivac0_neb_ft  # Default model when `mlip-neb` is run without a model argument.

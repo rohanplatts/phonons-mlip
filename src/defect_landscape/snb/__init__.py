@@ -1,0 +1,2 @@
+"""MLIP-accelerated ShakeNBreak workflow."""
+
