@@ -49,3 +49,9 @@ logs/
 assets/training_data
 results
 test
+
+# Defect-landscape generated data and run outputs
+assets/Rohan_data/
+assets/SNB_data/
+src/defect_landscape/data/
+src/defect_landscape/runs/
