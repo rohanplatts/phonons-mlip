@@ -30,14 +30,26 @@ def resolve_path(root: Path, value: str | Path | None) -> Path | None:
     return root / p
 
 
-def resolve_config_path(config_path: Path | None, *, repo_root: Path | None = None) -> Path:
+def resolve_config_path(
+    config_path: Path | None,
+    *,
+    repo_root: Path | None = None,
+    inputs: Path | None = None,
+) -> Path:
     if config_path is not None:
         resolved = config_path.expanduser().resolve()
         if not resolved.exists():
             raise FileNotFoundError(f"Missing config file: {resolved}")
         return resolved
 
-    candidates = [(Path.cwd() / "config.yml").expanduser().resolve()]
+    candidates: list[Path] = []
+    if inputs is not None:
+        input_path = Path(inputs).expanduser().resolve()
+        if input_path.is_file():
+            candidates.append(input_path)
+        else:
+            candidates.append((input_path / "config.yml").resolve())
+    candidates.append((Path.cwd() / "config.yml").expanduser().resolve())
     resolved_repo_root = (
         Path(repo_root).expanduser().resolve()
         if repo_root is not None

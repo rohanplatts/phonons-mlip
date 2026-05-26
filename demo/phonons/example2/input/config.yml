@@ -1,0 +1,29 @@
+defaults:
+  model_name: mace-mpa-0-medium
+  structure: diamond_demo
+  outputs_root: ../results
+  device: cuda
+  dtype: float32
+  overwrite: true
+structures:
+  pure:
+    diamond_demo:
+      unitcell_path: POSCAR
+      primitive_cell_path: primitive.poscar
+      supercell_matrix: [2, 2, 2]
+      delta: 0.01
+      want_band_structure: true
+      kpts: [8, 8, 8]
+      npts: 300
+      width_ev: 0.001
+workflows:
+  phonons:
+    structure_name: diamond_demo
+    unitcell_path: POSCAR
+    primitive_cell_path: primitive.poscar
+    supercell_matrix: [2, 2, 2]
+    delta: 0.01
+    want_band_structure: true
+    kpts: [8, 8, 8]
+    npts: 300
+    width_ev: 0.001

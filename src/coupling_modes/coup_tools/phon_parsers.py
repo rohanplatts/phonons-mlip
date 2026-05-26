@@ -282,6 +282,9 @@ def load_phonon_coupling_defaults(repo_root: Path) -> dict[str, Any]:
 
 def build_phonon_coupling_argparser(defaults: Dict[str, Any]) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(add_help=True)
+    parser.add_argument("--inputs", type=Path, default=None, help="Directory containing config.yml and coupling inputs.")
+    parser.add_argument("--outputs", type=Path, default=None, help="Directory for the generated coupling report.")
+    parser.add_argument("--config", type=Path, default=None, help="Optional config.yml path. Prefer --inputs.")
     parser.add_argument("--contcar_gs", default=defaults["contcar_gs"])
     parser.add_argument("--contcar_es", default=defaults["contcar_es"])
     parser.add_argument("--band_dft", default=defaults["band_dft_path"])

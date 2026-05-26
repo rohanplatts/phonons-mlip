@@ -1,0 +1,28 @@
+defaults:
+  model_name: mace-mpa-0-medium
+  structure: hbn_demo
+  outputs_root: ../results
+  device: cuda
+  dtype: float32
+  overwrite: true
+structures:
+  pure:
+    hbn_demo:
+      unitcell_path: POSCAR
+      supercell_matrix: [1, 1, 1]
+      delta: 0.01
+      want_band_structure: true
+      kpts: [8, 8, 8]
+      npts: 400
+      width_ev: 0.001
+workflows:
+  phonons:
+    structure_name: hbn_demo
+    unitcell_path: POSCAR
+    primitive_cell_path: primitive.poscar
+    supercell_matrix: [2, 2, 2]
+    delta: 0.01
+    want_band_structure: true
+    kpts: [12, 12, 12]
+    npts: 400
+    width_ev: 0.001

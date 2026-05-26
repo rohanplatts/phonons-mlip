@@ -1,0 +1,106 @@
+models:
+  mace-mpa-0-medium:
+    environment: mace_env
+
+  ivac0_neb_ft_1:
+    environment: mace_env
+
+  ivac0_neb_ft_compiled_1:
+    environment: mace_env
+
+  neutral_lora_optuna_v2_trial017:
+    environment: mace_env
+
+  neutral_lora_optuna_v2_trial032:
+    environment: mace_env
+
+  ivac0_neb_ft_2:
+    environment: mace_env
+
+  small-omat-0:
+    environment: mace_env
+
+  mace-omat-0-medium:
+    environment: mace_env
+
+  mace-matpes-pbe-omat-ft:
+    environment: mace_env
+
+  mace-matpes-r2scan-omat-ft:
+    environment: mace_env
+
+  M3GNet-ANI-1x-Subset-PES:
+    environment: matgl_env
+
+  M3GNet-MatPES-PBE-v2025.1-PES:
+    environment: matgl_env
+
+  M3GNet-MatPES-r2SCAN-v2025.1-PES:
+    environment: matgl_env
+
+  M3GNet-MP-2021.2.8-DIRECT-PES:
+    environment: matgl_env
+
+  M3GNet-MP-2021.2.8-PES:
+    environment: matgl_env
+
+  TensorNetDGL-MatPES-PBE-v2025.1-PES:
+    environment: matgl_env
+
+  TensorNetDGL-MatPES-r2SCAN-v2025.1-PES:
+    environment: matgl_env
+
+  mattersim-v1.0.0-1M:
+    environment: mattersim_env
+
+  mattersim-v1.0.0-5M:
+    environment: mattersim_env
+
+  orb-v3-direct-inf-omat:
+    environment: mace_env
+
+  orb-d3-sm-v2:
+    environment: mace_env
+
+  orb-v3-conservative-inf-omat:
+    environment: mace_env2
+
+  pet-mad-s-v1.1.0:
+    environment: mace_env
+
+  pet-omad-l-v0.1.0:
+    environment: mace_env
+
+  pet-omad-s-v1.0.0:
+    environment: mace_env
+
+  pet-omat-l-v1.0.0:
+    environment: mace_env
+
+  pet-omat-m-v1.0.0:
+    environment: mace_env
+
+  pet-omat-xl-v1.0.0:
+    environment: mace_env
+
+  mace_demo_neb_ft_lora:
+    environment: mace_env
+
+  orb_demo_neb_ft_lora:
+    environment: mace_env2
+
+  petmad_demo_neb_ft:
+    environment: mace_env2
+
+  CHGNet-MatPES-PBE-2025.2.10-2.7M-PES:
+    environment: matgl_env
+
+  CHGNet-MPtrj-2023.12.1-2.7M-PES:
+    environment: matgl_env
+
+  CHGNet-MPtrj-2024.2.13-11M-PES:
+    environment: matgl_env
+
+  CHGNet-MatPES-r2SCAN-2025.2.10-2.7M-PES:
+    environment: matgl_env
+    

@@ -1,0 +1,90 @@
+{
+  "model_order": [
+    "mace-mpa-0-medium",
+    "mace_demo_neb_ft_lora"
+  ],
+  "dft_root": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/mace/0_raw_inputs/output1",
+  "dft_neb_dat": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/mace/0_raw_inputs/output1/neb.dat",
+  "models": {
+    "mace-mpa-0-medium": {
+      "model_name": "mace-mpa-0-medium",
+      "model_dir": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/mace/4_benchmark/results/mace-mpa-0-medium",
+      "dft_root": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/mace/0_raw_inputs/output1",
+      "dft_neb_dat": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/mace/0_raw_inputs/output1/neb.dat",
+      "energy": {
+        "barrier_eV": 0.3546191640559755,
+        "deltaE_eV": 0.00013062322724977093,
+        "barrier_abs_err_eV": 0.1554848359440245,
+        "deltaE_abs_err_eV": 0.001486376772750229,
+        "profile_rmse_eV": 0.12353945880095703
+      },
+      "path": {
+        "mean_rms_disp_A": 0.16145123905436953,
+        "max_rms_disp_A": 0.2341180943873135,
+        "mean_atom_disp_A": 0.1349466628429152,
+        "max_atom_disp_A": 0.7103594545096208,
+        "auc_rms_disp_A": 0.16185486715200548
+      },
+      "supplementary_barriers_eV": {
+        "DFT": 0.510104,
+        "mace-mpa-0-medium": 0.354619
+      }
+    },
+    "mace_demo_neb_ft_lora": {
+      "model_name": "mace_demo_neb_ft_lora",
+      "model_dir": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/mace/4_benchmark/results/mace_demo_neb_ft_lora",
+      "dft_root": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/mace/0_raw_inputs/output1",
+      "dft_neb_dat": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/mace/0_raw_inputs/output1/neb.dat",
+      "energy": {
+        "barrier_eV": 0.43560264297187246,
+        "deltaE_eV": -0.0028600994290286508,
+        "barrier_abs_err_eV": 0.07450135702812755,
+        "deltaE_abs_err_eV": 0.004477099429028651,
+        "profile_rmse_eV": 0.04340551980465319
+      },
+      "path": {
+        "mean_rms_disp_A": 0.14481417682841297,
+        "max_rms_disp_A": 0.2129055744693154,
+        "mean_atom_disp_A": 0.11733965722867781,
+        "max_atom_disp_A": 0.7359352832305207,
+        "auc_rms_disp_A": 0.145176212270484
+      },
+      "supplementary_barriers_eV": {
+        "DFT": 0.510104,
+        "mace_demo_neb_ft_lora": 0.435603
+      }
+    }
+  },
+  "path_fidelity": {
+    "grid_points": 401,
+    "dft_path_length_A": 0.5331511104643663,
+    "models": {
+      "mace-mpa-0-medium": {
+        "mean_rms_disp_A": 0.16145123905436953,
+        "max_rms_disp_A": 0.2341180943873135,
+        "mean_atom_disp_A": 0.1349466628429152,
+        "max_atom_disp_A": 0.7103594545096208,
+        "auc_rms_disp_A": 0.16185486715200548
+      },
+      "mace_demo_neb_ft_lora": {
+        "mean_rms_disp_A": 0.14481417682841297,
+        "max_rms_disp_A": 0.2129055744693154,
+        "mean_atom_disp_A": 0.11733965722867781,
+        "max_atom_disp_A": 0.7359352832305207,
+        "auc_rms_disp_A": 0.145176212270484
+      },
+      "Linear interpolation": {
+        "mean_rms_disp_A": 1.3679357824522469e-13,
+        "max_rms_disp_A": 2.8755563256515527e-13,
+        "mean_atom_disp_A": 1.303008813751403e-13,
+        "max_atom_disp_A": 4.459137939013977e-13,
+        "auc_rms_disp_A": 1.3713310031386588e-13
+      }
+    },
+    "supplementary_barriers_eV": {
+      "DFT": 0.510104,
+      "mace-mpa-0-medium": 0.354619,
+      "mace_demo_neb_ft_lora": 0.435603
+    }
+  }
+}

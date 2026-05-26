@@ -1,0 +1,32 @@
+{
+  "grid_points": 401,
+  "dft_path_length_A": 0.5331511104643663,
+  "models": {
+    "orb-v3-conservative-inf-omat": {
+      "mean_rms_disp_A": 0.14748342999028233,
+      "max_rms_disp_A": 0.21166438606376564,
+      "mean_atom_disp_A": 0.12134755456101927,
+      "max_atom_disp_A": 0.7213747930078603,
+      "auc_rms_disp_A": 0.14785213856525806
+    },
+    "orb_demo_neb_ft_lora": {
+      "mean_rms_disp_A": 0.13742931076050233,
+      "max_rms_disp_A": 0.20221449954116766,
+      "mean_atom_disp_A": 0.1100978392596602,
+      "max_atom_disp_A": 0.7320102306567109,
+      "auc_rms_disp_A": 0.13777288403740356
+    },
+    "Linear interpolation": {
+      "mean_rms_disp_A": 1.3679357824522469e-13,
+      "max_rms_disp_A": 2.8755563256515527e-13,
+      "mean_atom_disp_A": 1.303008813751403e-13,
+      "max_atom_disp_A": 4.459137939013977e-13,
+      "auc_rms_disp_A": 1.3713310031386588e-13
+    }
+  },
+  "supplementary_barriers_eV": {
+    "DFT": 0.510104,
+    "orb-v3-conservative-inf-omat": 0.39096,
+    "orb_demo_neb_ft_lora": 0.50492
+  }
+}

@@ -153,7 +153,7 @@ def _force_error_metrics(
     and comparing to DFT OUTCAR forces.
     """
     from ase.io import read
-    from mlip_phonons.get_calc import get_calc_object
+    from common.get_calc import get_calc_object
 
     dft_forces, poscars = load_poscar_forces_from_dft_run(dft_root)
 
@@ -194,7 +194,7 @@ def _max_f_perp_from_mlip_path(
     Returns max over interior images of max atom ||F_perp||.
     """
     from ase.io import read
-    from mlip_phonons.get_calc import get_calc_object
+    from common.get_calc import get_calc_object
 
     img_dirs = sorted([p for p in vasp_ci_dir.iterdir() if p.is_dir() and p.name.isdigit()])
     if len(img_dirs) < 3:
@@ -375,7 +375,7 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
 
     default_results_root = resolve_path(
         run_root,
-        neb_defaults_cfg.get("results_root") or os.environ.get("NEB_RESULTS_ROOT"),
+        neb_defaults_cfg.get("results_root") or neb_defaults_cfg.get("outputs_root") or os.environ.get("NEB_RESULTS_ROOT"),
     ) or (run_root / "resultsNEB")
     default_models_root = resolve_path(
         run_root,

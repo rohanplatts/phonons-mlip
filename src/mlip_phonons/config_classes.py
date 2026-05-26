@@ -67,6 +67,21 @@ to the model, add it to modelcfg.
 
 StructureGroup = Literal["pure", "defects"] # structures are either pure or defects. 
 
+DEFAULT_NAME_TEMPLATES: dict[str, str] = {
+    "relax_traj": "{base}_relax.traj",
+    "relaxed_poscar": "{base}_relaxed.poscar",
+    "phonons_obj": "{base}_phonons.yaml",
+    "force_constants": "{base}_force_constants.yaml",
+    "phonon_dos_npz": "{base}_phonon_dos.npz",
+    "phonon_band_yaml": "{base}_phonon_band.yaml",
+    "phonon_band_plot": "{base}_phonon_band_plot.png",
+    "phonon_dispersion_dos_plot": "{base}_phonon_dispersion_dos.png",
+    "phonon_dos_plot": "{base}_phonon_dos.png",
+    "band_plumipy": "{base}_band.yaml",
+    "contcar_gs_plumipy": "{base}_CONTCAR_GS",
+    "outcar_gs_plumipy": "{base}_OUTCAR_GS",
+}
+
 # some private parsers
 def _ints_from_any(x: Any) -> list[int]:
     """Extract integers from lists, tuples arrays or strings, to lists.
@@ -385,12 +400,12 @@ class OutputPlan:
         # THE BASE IDENTIFIER FOR THE FILES
         base = f"{model.name}_{structure.name}"
 
-        templates = exec_cfg.default_name_templates # ensures its a dictionary.copy() 
+        templates = dict(DEFAULT_NAME_TEMPLATES)
         templates.update(exec_cfg.output_name_templates)
 
         names = {k: v.format(base=base, model=model.name, structure=structure.name) for k, v in templates.items()}
 
-        results_root = (run_root / exec_cfg.results_root / model.name / structure.name).resolve()
+        results_root = (run_root / exec_cfg.results_root / structure.name).resolve()
         raw_dir = results_root / exec_cfg.raw_subdir
         plot_dir = results_root / exec_cfg.plot_subdir
         raw_dir.mkdir(parents=True, exist_ok=True)

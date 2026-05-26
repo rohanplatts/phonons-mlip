@@ -13,7 +13,8 @@ export OPENBLAS_NUM_THREADS=16
 
 conda activate mace_env
 
-python src/fine_tuning/file_conversion_script.py \
-  --prefix ivac0_neb_wd3 \
-  --remove-d3 
+cd "$REPO_ROOT"
 
+mlip-ft mace \
+  --curate-neb \
+  --inputs "demo/fine_tuning/mace/0_raw_inputs/siv_rules.yml"

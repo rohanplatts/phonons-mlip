@@ -6,11 +6,11 @@ Suppose you want the MEP from NEB between two endpoints with the MLIP 'mace-mpa-
 2. Obtain the 'mace-mpa-0-medium' model file (I HAVE ALREADY INCLUDED THIS FILE FOR CONVENIENCE...)
 3. Put the model file in `assets/models/<model_family>/<model_file>` (I HAVE ALREADY DONE THIS...)
 4. Prepare endpoints: `POSCAR_i` and `POSCAR_f` (or pass paths via flags). (AS AN EXAMPLE, I HAVE PUT SAMPLE POSCAR_i and POSCAR_f in `src/NEB` )
-5. Check if the model file is supported by reading config.yml (IT IS), and if it isnt, add its calculator object to src/mlip_phonons/get_calc.py
-6. Run:
+5. Check if the model file is supported by reading config.yml (IT IS), and if it isnt, add its calculator object to src/common/get_calc.py
+6. Run the case directory:
 
 ```bash
-mlip-neb "mace-mpa-0-medium" --poscar-i path/to/POSCAR_i --poscar-f path/to/POSCAR_f
+mlip-neb --inputs path/to/neb-case
 ```
 
 Useful overrides:
@@ -55,9 +55,9 @@ neb:
     steps_ci: 1000
 ```
 
-Then, all you will have to do is type into command line: 
+Then, all you will have to do is type into command line:
 ```
-mlip-neb
+mlip-neb --inputs path/to/neb-case
 ```
 And it shall run according to your settings.
 

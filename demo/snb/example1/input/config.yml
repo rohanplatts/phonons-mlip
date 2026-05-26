@@ -1,0 +1,24 @@
+defaults:
+  model_name: mace-mpa-0-medium
+  outputs_root: ../results
+  device: cuda
+  dtype: float32
+  overwrite: true
+  bulk: bulk/POSCAR
+  defect: defect/POSCAR
+  vasp_inputs_dir: .
+  copy_potcar: true
+  include_vdw: true
+  prepare_dft: true
+workflows:
+  snb:
+    oxidation_states:
+      Cs: 1
+      Pb: 2
+      I: -1
+      Br: -1
+    settings:
+      fmax: 0.03
+      max_steps: 400
+      energy_window_eV: 0.4
+      max_clusters_per_model: 5

@@ -10,7 +10,6 @@ import yaml
 from ase.io import read
 from ase.mep import NEB
 from ase.optimize import FIRE
-import torch
 import os 
 
 # this file lives in <repo>/src/NEB/run_neb_raw.py
@@ -36,6 +35,8 @@ from NEB.neb_tools.neb_parsers import (
     write_neb_summary,
     resolve_config_path,
 )
+from common.benchmarking import benchmark_root, maybe_fan_out, model_names
+from NEB.neb_tools.benchmark_report import benchmark_results_ready, generate_family_benchmark_report
 
 
 def _parse_args(
@@ -58,6 +59,7 @@ def _parse_args(
 ) -> NEBInputs:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=Path, default=default_config_path)
+    parser.add_argument("--inputs", type=Path, default=argparse.SUPPRESS)
     parser.add_argument("model_name", nargs="?", default=default_model_name)
     parser.add_argument("--n-images", type=int, default=None)
     parser.add_argument("--poscar-i", type=Path, default=default_poscar_i)
@@ -97,6 +99,12 @@ def _parse_args(
         default=False,
         help="Run NEB_compare_all for the results root instead of a NEB run.",
     )
+    parser.add_argument(
+        "--report-benchmark",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Generate benchmark plots and README content after the benchmark results exist.",
+    )
     
     parser.add_argument(
         "--overwrite",
@@ -117,6 +125,7 @@ def _parse_args(
         remap_f_i=args.remap_f_i,
         include_vdw=args.include_vdw,
         compare=args.compare,
+        report_benchmark=args.report_benchmark,
         overwrite=args.overwrite,
         models_root=args.models_root,
         results_root=args.results_root,
@@ -149,19 +158,30 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
 
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("--config", type=Path, default=None)
+    pre_parser.add_argument("--inputs", type=Path, default=None)
     pre_args, _ = pre_parser.parse_known_args(argv)
-    config_path = resolve_config_path(pre_args.config, repo_root=repo_root)
+    config_path = resolve_config_path(pre_args.config, repo_root=repo_root, inputs=pre_args.inputs)
 
     config = _load_yaml(config_path)
 
     run_root = config_path.parent 
 
+    global_defaults = config.get("defaults", {}) or {}
+    workflow_cfg = ((config.get("workflows", {}) or {}).get("neb", {}) or {})
+    workflow_settings_cfg = workflow_cfg.get("settings", {}) or {}
     neb_cfg = config.get("neb", {}) or {}
-    neb_defaults_cfg = neb_cfg.get("defaults", {}) or {}
-    neb_settings_cfg = neb_cfg.get("settings", {}) or {}
+    neb_defaults_cfg = {
+        **global_defaults,
+        **(neb_cfg.get("defaults", {}) or {}),
+        **{k: v for k, v in workflow_cfg.items() if k != "settings"},
+    }
+    neb_settings_cfg = {
+        **(neb_cfg.get("settings", {}) or {}),
+        **(workflow_settings_cfg if isinstance(workflow_settings_cfg, dict) else {}),
+    }
 
     structures_dir = _resolve_path(run_root, neb_defaults_cfg.get("structures_dir")) or (
-        run_root / "assets" / "structures" / "NEB"
+        repo_root / "assets" / "structures" / "NEB"
     )
     default_poscar_i = _resolve_path(run_root, neb_defaults_cfg.get("poscar_i")) or (structures_dir / "POSCAR_i")
     default_poscar_f = _resolve_path(run_root, neb_defaults_cfg.get("poscar_f")) or (structures_dir / "POSCAR_f")
@@ -171,9 +191,9 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         default_dft_neb_dat = maybe if maybe.exists() else None
 
     default_models_root = _resolve_path(run_root, neb_defaults_cfg.get("models_root")) or (
-        run_root / "assets" / "models"
+        repo_root / "assets" / "models"
     )
-    default_results_root = _resolve_path(run_root, neb_defaults_cfg.get("results_root")) or (
+    default_results_root = _resolve_path(run_root, neb_defaults_cfg.get("results_root") or neb_defaults_cfg.get("outputs_root")) or (
         run_root / "resultsNEB"
     )
     default_vasp_inputs_dir = _resolve_path(run_root, neb_defaults_cfg.get("vasp_inputs_dir"))
@@ -207,8 +227,8 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
     
     
 
-    from mlip_phonons.get_calc import get_calc_object
-    from mlip_phonons.relax import relax
+    from common.get_calc import get_calc_object
+    from common.relax import relax
 
     args = _parse_args(
         argv,
@@ -230,6 +250,24 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
 
     model_name = str(args.model_name)
 
+    if args.report_benchmark:
+        names = model_names(config)
+        if len(names) != 2:
+            raise ValueError(
+                f"--report-benchmark requires exactly two models in defaults.model_name, got {len(names)}"
+            )
+        results_root = benchmark_root(config_path, config)
+        if not benchmark_results_ready(results_root, names):
+            fanout_rc = maybe_fan_out("neb", config_path=config_path, config=config)
+            if fanout_rc is not None and fanout_rc != 0:
+                return fanout_rc
+        generate_family_benchmark_report(config_path, config)
+        return 0
+
+    fanout_rc = maybe_fan_out("neb", config_path=config_path, config=config)
+    if fanout_rc is not None:
+        return fanout_rc
+
     if args.compare:
         from NEB.NEB_compare_all import main as compare_main
 
@@ -246,13 +284,7 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
     
 
     results_root = args.results_root
-    if (not args.overwrite) and Path(results_root/model_name).exists():
-        for i in range(1, 1_000_000):
-            cand = results_root.with_name(f"{results_root.name}_{i}")
-            if not cand.exists():
-                results_root = cand
-                break
-    out_raw = (results_root / model_name / "raw").resolve()
+    out_raw = (results_root / "raw").resolve()
     out_raw.mkdir(parents=True, exist_ok=True)
 
 
@@ -269,9 +301,16 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         raise ValueError("Cells differ between POSCAR_i and POSCAR_f.")
 
     device = args.device
-    if device.startswith("cuda") and not torch.cuda.is_available():
-        print("CUDA requested but not available; falling back to CPU.")
-        device = "cpu"
+    if device.startswith("cuda"):
+        try:
+            import torch
+        except ImportError:
+            print("CUDA requested but torch is not installed; falling back to CPU.")
+            device = "cpu"
+        else:
+            if not torch.cuda.is_available():
+                print("CUDA requested but not available; falling back to CPU.")
+                device = "cpu"
     dtype = args.dtype
 
     calc_mlip = get_calc_object(

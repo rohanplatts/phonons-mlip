@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mlip-phonons"
-version = "0.1.0"
+version = "0.2.1"
 description = "Phonon workflow with MLIP calculators"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
@@ -30,8 +30,12 @@ mlip-neb = "NEB.run_neb_raw_v2:main"
 mlip-snb = "defect_landscape.snb.cli:main"
 remap-poscar = "NEB.remap_poscar:main"
 mlip-coup = "coupling_modes.phonon_coupling:main"
+mlip-ft = "fine_tuning.cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["mlip_phonons", "mlip_phonons.tools", "NEB", "NEB.neb_tools", "coupling_modes.coup_tools", "defect_landscape", "defect_landscape.snb"]
 include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["common*", "mlip_phonons*", "mlip_workflows*", "NEB*", "coupling_modes*", "defect_landscape*", "fine_tuning*"]

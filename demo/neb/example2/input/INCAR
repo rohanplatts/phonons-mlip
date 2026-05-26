@@ -1,0 +1,31 @@
+System = ortho CsPbI3 + defect in relaxed 80 atom supercell
+
+GGA = PE        ! XC functional; PBE
+IVDW = 12       ! DFT-D3 dispersion relation; additive vdW corrections to energy functional
+
+ENCUT = 400     ! energy cutoff for plane waves; only position relax, don't need higher encut
+ALGO = Normal   ! electronic minimisation algo; Blocked-Davidson scheme 
+NELM = 60       ! no. electronic minimisation steps; default
+EDIFF = 1E-6    ! tolerance for energy convergence
+ISMEAR = 0      ! Gaussian smearing; default
+SIGMA = 0.2     ! broadening of the smearing; default
+LREAL = Auto	! real space evaluation of projection operators, automatically optimised
+ISYM = 0        ! switches off symmetry so defect not repeated
+
+ISIF = 2        ! relaxes ion positions, calculates stress tensor
+IBRION = 3      ! quick-min algo for ionic relaxation (nec. for NEB)
+POTIM = 0       ! step width scale for relaxation; 0 disables default optimisers
+IOPT = 7        ! FIRE force-based optimiser for NEB; more efficient than QM?
+NSW = 150       ! max no. relaxation steps
+EDIFFG = -0.02  ! tolerance for forces in relaxation loop
+
+                ! FIRE params stuff
+MAXMOVE = 0.3   ! bit higher
+TIMESTEP = 0.3  ! bit higher 
+
+ICHAIN = 0      ! default NEB
+LCLIMB = .TRUE. ! CI to push image to saddle
+SPRING = -5     ! spring constant
+IMAGES = 5      ! no. intermediate images
+
+NCORE = 4       ! no. cores per orbital; integer divisor of ntasks/IMAGES

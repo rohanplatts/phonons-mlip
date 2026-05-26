@@ -8,23 +8,23 @@ set -euo pipefail
 #   ./src/fine_tuning/train_ivac0_neb.sh --dry_run
 
 # Output run name (used for output directories).
-NAME="ivac0_neb_ft"
+NAME="${NAME:-ivac0_neb_ft}"
 
 # Foundation model to start from.
 # Use the float32 copy for speed; switch back to mace-mpa-0-medium.model if needed.
-FOUNDATION_MODEL="assets/models/mace/mace-mpa-0-medium-f32.model"
-DATA_DIR="assets/training_data/CsPbI3/I_vac_0/processed_mace"
-PREFIX="ivac0_neb_stride5"
+FOUNDATION_MODEL="${FOUNDATION_MODEL:-assets/models/mace/mace-mpa-0-medium-f32.model}"
+DATA_DIR="${DATA_DIR:-assets/training_data/CsPbI3/I_vac_0/processed_mace}"
+PREFIX="${PREFIX:-ivac0_neb_stride5}"
 
 TRAIN_FILE="${DATA_DIR}/${PREFIX}_train.extxyz"
 VALID_FILE="${DATA_DIR}/${PREFIX}_val.extxyz"
 TEST_FILE="${DATA_DIR}/${PREFIX}_test.extxyz"
 
-DEVICE="cuda"
-DTYPE="float32"
-BATCH_SIZE="2"
-MAX_EPOCHS="200"
-LEARNING_RATE="5e-5"
+DEVICE="${DEVICE:-cuda}"
+DTYPE="${DTYPE:-float32}"
+BATCH_SIZE="${BATCH_SIZE:-2}"
+MAX_EPOCHS="${MAX_EPOCHS:-200}"
+LEARNING_RATE="${LEARNING_RATE:-5e-5}"
 
 exec python -m mace.cli.run_train \
   --name "${NAME}" \

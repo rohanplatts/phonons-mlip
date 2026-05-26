@@ -65,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
     neb_cfg = config.get("neb", {}) or {}
     neb_defaults_cfg = neb_cfg.get("defaults", {}) or {}
 
-    default_results_root = resolve_path(run_root, neb_defaults_cfg.get("results_root")) or (
+    default_results_root = resolve_path(run_root, neb_defaults_cfg.get("results_root") or neb_defaults_cfg.get("outputs_root")) or (
         run_root / "resultsNEB"
     )
     default_dft_neb_dat = resolve_path(run_root, neb_defaults_cfg.get("dft_neb_dat"))

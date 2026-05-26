@@ -1,0 +1,15 @@
+name: mace_env2
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - numpy
+  - ase>=3.25,<4
+  - pyyaml
+  - pip:
+      - torch>=2.8.0,<3.0.0
+      - metatrain[pet]
+      - upet
+      - wandb

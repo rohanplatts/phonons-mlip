@@ -7,7 +7,7 @@ from typing import Any
 
 from .cluster import available_models, cluster_model
 from .compare import compare_dft
-from .config import SnbConfig, load_config, parse_oxidation_states
+from .config import SnbConfig, load_config, load_yaml, parse_oxidation_states
 from .dft_parse import check_dft
 from .generate import generate_snb_inputs
 from .io import import_snb_inputs, manifest_path
@@ -15,6 +15,7 @@ from .relax import relax_model
 from .report import write_report
 from .select import select_clusters
 from .vasp import prepare_dft
+from common.benchmarking import maybe_fan_out
 
 
 KNOWN_COMMANDS = {
@@ -66,12 +67,14 @@ normalise_argv = _normalise_argv
 def _preload_config(argv: list[str]) -> SnbConfig:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--config")
+    parser.add_argument("--inputs")
     args, _ = parser.parse_known_args(argv)
-    return load_config(args.config)
+    return load_config(args.config, inputs=args.inputs)
 
 
 def _add_shared_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", default=argparse.SUPPRESS, help="Path to config.yml.")
+    parser.add_argument("--inputs", default=argparse.SUPPRESS, help="Path to an input directory containing config.yml.")
     parser.add_argument("--models-root", type=Path, default=argparse.SUPPRESS, help="Root folder containing MLIP models.")
     parser.add_argument("--results-root", type=Path, default=argparse.SUPPRESS, help="Root folder for resultsSNB cases.")
     parser.add_argument("--device", default=argparse.SUPPRESS, help="Calculator device, for example cuda or cpu.")
@@ -92,7 +95,7 @@ def _add_shared_flags(parser: argparse.ArgumentParser) -> None:
 
 def _add_case_flags(parser: argparse.ArgumentParser, *, need_model: bool = False) -> None:
     if need_model:
-        parser.add_argument("model_name", nargs="?", help="Model name accepted by mlip_phonons.get_calc_object().")
+        parser.add_argument("model_name", nargs="?", help="Model name accepted by common.get_calc.get_calc_object().")
     else:
         parser.add_argument("model_name", nargs="?", help="Optional model name.")
     parser.add_argument("--case-name", help="Case label. Defaults to the SnB or defect folder name where possible.")
@@ -122,7 +125,7 @@ def build_parser(config: SnbConfig) -> argparse.ArgumentParser:
 
     run = subparsers.add_parser("run", help="Import/generate SnB inputs, relax, cluster, select, and optionally export DFT folders.")
     _add_shared_flags(run)
-    run.add_argument("model_name", nargs="?", help="Model name accepted by mlip_phonons.get_calc_object().")
+    run.add_argument("model_name", nargs="?", help="Model name accepted by common.get_calc.get_calc_object().")
     run.add_argument("--case-name")
     _add_input_flags(run)
     run.add_argument("--fmax", type=float)
@@ -441,6 +444,9 @@ def dispatch(args: argparse.Namespace, config: SnbConfig) -> Path | list[Path] |
 def main(argv: list[str] | None = None) -> int:
     raw_argv = list(sys.argv[1:] if argv is None else argv)
     config = _preload_config(raw_argv)
+    fanout_rc = maybe_fan_out("snb", config_path=config.config_path, config=load_yaml(config.config_path))
+    if fanout_rc is not None:
+        return fanout_rc
     argv2 = _normalise_argv(raw_argv)
     parser = build_parser(config)
     args = parser.parse_args(argv2)

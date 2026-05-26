@@ -88,8 +88,8 @@ def relax_model(
     threads: int | str = 16,
 ) -> Path:
     from ase.io import read, write
-    from ase.optimize import FIRE
-    from mlip_phonons.get_calc import get_calc_object
+    from common.get_calc import get_calc_object
+    from common.relax import relax
 
     set_threads(threads)
     candidates = load_candidates(results_root, case_name)
@@ -126,8 +126,14 @@ def relax_model(
         atoms = read(candidate["staged_poscar"])
         atoms.calc = calc
         t0 = time.time()
-        dyn = FIRE(atoms, trajectory=str(out_dir / "trajectory.traj"))
-        dyn.run(fmax=fmax, steps=max_steps)
+        relax(
+            atoms,
+            fmax=fmax,
+            outdir=out_dir,
+            filename="trajectory.traj",
+            type="FIRE",
+            steps=max_steps,
+        )
         elapsed = time.time() - t0
 
         energy = float(atoms.get_potential_energy())
@@ -158,4 +164,3 @@ def relax_model(
         print(f"  E={energy:.8f} eV, fmax={max_force:.4f} eV/A, converged={payload['converged']}")
 
     return write_relaxation_summary(results_root, case_name)
-

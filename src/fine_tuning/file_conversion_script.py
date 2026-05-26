@@ -11,15 +11,47 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import sys
 import re
 from pathlib import Path
 from typing import IO, Iterable
+
+import yaml
 
 
 FORCE_HDR = "POSITION                                       TOTAL-FORCE (eV/Angst)"
 TOTEN_RE = re.compile(r"free\s+energy\s+TOTEN\s+=\s+([-0-9.]+)\s+eV")
 VRHFIN_RE = re.compile(r"VRHFIN\s*=\s*([A-Za-z]+)\s*:")
 IONS_PER_TYPE_RE = re.compile(r"ions per type\s*=\s*(.*)")
+CONFIG_SECTION_KEYS = ("convert_mace", "demo", "fine_tuning")
+
+
+def load_yaml(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    with path.open("r", encoding="utf-8") as handle:
+        return yaml.safe_load(handle) or {}
+
+
+def pick_section(raw: dict) -> dict:
+    for key in CONFIG_SECTION_KEYS:
+        section = raw.get(key)
+        if isinstance(section, dict):
+            return section
+    return raw if isinstance(raw, dict) else {}
+
+
+def resolve_path(root: Path, value: str | Path | None) -> Path | None:
+    if value in (None, ""):
+        return None
+    path = Path(value).expanduser()
+    return path if path.is_absolute() else (root / path).resolve()
+
+
+def as_csv(value: object) -> str:
+    if isinstance(value, (list, tuple)):
+        return ",".join(str(item) for item in value)
+    return str(value)
 
 
 def open_text(p: Path) -> IO[str]:
@@ -181,16 +213,22 @@ def iter_force_tables(outcar: Path, n_atoms: int) -> Iterable[tuple[int, float, 
             yield ionic_step, energy, pos, frc
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    if argv is None:
+        argv = sys.argv[1:]
     ap = argparse.ArgumentParser()
-    ap.add_argument("--neb-root", type=Path, default=Path("assets/training_data/CsPbI3/I_vac_0/output1"))
-    ap.add_argument("--images", default="00,01,02,03,04,05,06")
-    ap.add_argument("--out-dir", type=Path, default=Path("assets/training_data/CsPbI3/I_vac_0/processed_mace"))
-    ap.add_argument("--prefix", default="ivac0_neb")
-    ap.add_argument("--stride", type=int, default=1, help="Keep every Nth ionic step (per image).")
+    ap.add_argument("--inputs", type=Path, required=True, help="Directory containing input/config.yml and NEB image folders.")
+    ap.add_argument("--outputs", type=Path, required=True, help="Directory where converted extxyz files are written.")
+    ap.add_argument("--config", type=Path, default=None, help="Optional config.yml path. Defaults to <inputs>/config.yml.")
+    ap.add_argument("--source", default=None, help="NEB subdirectory under --inputs, for example output1.")
+    ap.add_argument("--neb-root", type=Path, default=None, help="Override the NEB root directory directly.")
+    ap.add_argument("--out-dir", type=Path, default=None, help="Override the output directory directly.")
+    ap.add_argument("--prefix", default=None, help="Output file prefix.")
+    ap.add_argument("--stride", type=int, default=None, help="Keep every Nth ionic step (per image).")
+    ap.add_argument("--images", default=None)
     ap.add_argument("--last-only", action="store_true", help="Only keep the final ionic step for each image.")
-    ap.add_argument("--val-images", default="02")
-    ap.add_argument("--test-images", default="03")
+    ap.add_argument("--val-images", default=None)
+    ap.add_argument("--test-images", default=None)
     ap.add_argument("--no-split", action="store_true")
     ap.add_argument("--count-only", action="store_true")
     ap.add_argument(
@@ -221,15 +259,62 @@ def main() -> int:
         metavar="KEY=VALUE",
         help="Extra D3 damping parameter tweak, repeatable, e.g. --d3-param-tweak s9=0.0",
     )
-    args = ap.parse_args()
+    ap.add_argument("--dry-run", action="store_true", help="Resolve inputs and print the planned conversion, but do not write files.")
+    args = ap.parse_args(argv)
 
-    images = [x.strip() for x in args.images.split(",") if x.strip()]
-    val_images = {x.strip() for x in args.val_images.split(",") if x.strip()}
-    test_images = {x.strip() for x in args.test_images.split(",") if x.strip()}
+    config_path = args.config
+    if config_path is not None:
+        config_path = config_path.expanduser()
+        if not config_path.is_absolute():
+            config_path = (Path.cwd() / config_path).resolve()
+        if not config_path.exists():
+            raise SystemExit(f"Missing config file: {config_path}")
+    else:
+        config_path = (args.inputs / "config.yml").resolve()
+
+    raw_config = load_yaml(config_path)
+    config = pick_section(raw_config)
+
+    neb_root = resolve_path(args.inputs, args.neb_root)
+    if neb_root is None:
+        source = args.source if args.source is not None else config.get("source", config.get("neb_root", "output1"))
+        neb_root = resolve_path(args.inputs, source)
+    if neb_root is None:
+        raise SystemExit("Missing NEB source. Set --neb-root, --source, or input/config.yml.")
+
+    out_dir = resolve_path(args.outputs, args.out_dir)
+    if out_dir is None:
+        out_dir = resolve_path(args.outputs, config.get("out_dir", "processed_mace"))
+    if out_dir is None:
+        raise SystemExit("Missing output directory. Set --out-dir or input/config.yml.")
+
+    prefix = args.prefix if args.prefix is not None else config.get("prefix", "ivac0_neb")
+    stride = args.stride if args.stride is not None else int(config.get("stride", 1))
+
+    images_raw = args.images if args.images is not None else config.get("images", "00,01,02,03,04,05,06")
+    val_images_raw = args.val_images if args.val_images is not None else config.get("val_images", "02")
+    test_images_raw = args.test_images if args.test_images is not None else config.get("test_images", "03")
+
+    images = [x.strip() for x in as_csv(images_raw).split(",") if x.strip()]
+    val_images = {x.strip() for x in as_csv(val_images_raw).split(",") if x.strip()}
+    test_images = {x.strip() for x in as_csv(test_images_raw).split(",") if x.strip()}
     if val_images & test_images:
         raise SystemExit("val-images and test-images overlap")
-    if args.stride < 1:
+    if stride < 1:
         raise SystemExit("--stride must be >= 1")
+
+    if args.dry_run:
+        print(f"config: {config_path}")
+        print(f"inputs: {args.inputs.resolve()}")
+        print(f"outputs: {args.outputs.resolve()}")
+        print(f"neb_root: {neb_root}")
+        print(f"out_dir: {out_dir}")
+        print(f"prefix: {prefix}")
+        print(f"stride: {stride}")
+        print(f"images: {','.join(images)}")
+        print(f"val_images: {','.join(sorted(val_images))}")
+        print(f"test_images: {','.join(sorted(test_images))}")
+        return 0
 
     if args.remove_d3:
         print("WARNING: d3 term correction will be subtracted.")
@@ -249,11 +334,11 @@ def main() -> int:
             except ValueError as exc:
                 raise SystemExit(f"Invalid float in --d3-param-tweak '{item}'") from exc
 
-    args.out_dir.mkdir(parents=True, exist_ok=True)
-    out_all = args.out_dir / f"{args.prefix}_all.extxyz"
-    out_train = args.out_dir / f"{args.prefix}_train.extxyz"
-    out_val = args.out_dir / f"{args.prefix}_val.extxyz"
-    out_test = args.out_dir / f"{args.prefix}_test.extxyz"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_all = out_dir / f"{prefix}_all.extxyz"
+    out_train = out_dir / f"{prefix}_train.extxyz"
+    out_val = out_dir / f"{prefix}_val.extxyz"
+    out_test = out_dir / f"{prefix}_test.extxyz"
 
     n_all = n_train = n_val = n_test = 0
     per_image = {}
@@ -267,7 +352,7 @@ def main() -> int:
 
     try:
         for img in images:
-            outcar = find_outcar(args.neb_root / img)
+            outcar = find_outcar(neb_root / img)
             symbols, lattice = parse_header(outcar)
             n_atoms = len(symbols)
 
@@ -280,7 +365,7 @@ def main() -> int:
                     last_buf = (step, E, pos, frc)
                     continue
 
-                if args.stride == 1 or (step % args.stride == 0):
+                if stride == 1 or (step % stride == 0):
                     E_use = E
                     frc_use = frc
                     if args.remove_d3:
@@ -346,7 +431,7 @@ def main() -> int:
                                 n_train += 1
                 else:
                     # If striding, always include final step.
-                    if args.stride > 1 and step not in wrote_steps:
+                    if stride > 1 and step not in wrote_steps:
                         E_use = E
                         frc_use = frc
                         if args.remove_d3:

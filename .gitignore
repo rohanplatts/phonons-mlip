@@ -7,7 +7,7 @@ __pycache__/
 
 cache.*
 
-.env/
+
 .venv/
 venv/
 *.egg-info/
@@ -27,7 +27,6 @@ assets/models/**
 !assets/models/mace/ivac0_neb_ft_compiled.model
 !assets/models/mace/mace-mpa-0-medium.model
 !assets/models/mace/mace-mpa-0-medium-ft-cspbi3*.model
-!assets/models/MODELS.md
 
 assets/structures/**
 !assets/structures/NEB
@@ -55,3 +54,17 @@ assets/Rohan_data/
 assets/SNB_data/
 src/defect_landscape/data/
 src/defect_landscape/runs/
+examples/defect_landscape_archive/data/
+examples/defect_landscape_archive/runs/
+
+# Fine-tuning demo outputs
+demo/fine_tuning/*/1_curated_data/*
+!demo/fine_tuning/*/1_curated_data/.gitkeep
+demo/fine_tuning/*/2_train/outputs/*
+!demo/fine_tuning/*/2_train/outputs/.gitkeep
+demo/fine_tuning/*/3_results/*
+!demo/fine_tuning/*/3_results/.gitkeep
+demo/fine_tuning/*/4_benchmark/models/*
+!demo/fine_tuning/*/4_benchmark/models/.gitkeep
+demo/fine_tuning/*/4_benchmark/results/*
+!demo/fine_tuning/*/4_benchmark/results/.gitkeep

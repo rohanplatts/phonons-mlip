@@ -3,13 +3,12 @@
 This module is the high-level orchestrator for the NEB dataset synthesis
 pipeline. It loads a YAML config, builds a per-frame catalogue from one or more
 NEB sources, applies a rule-based sampler, splits the selected rows into
-train/validation/test sets, and writes MACE-ready `extxyz` outputs plus
+train/validation/test sets, and writes family-ready `extxyz` outputs plus
 bookkeeping files.
 """
 
 from __future__ import annotations
 
-import argparse
 import csv
 import json
 import math
@@ -23,27 +22,13 @@ from pathlib import Path
 
 import yaml
 
-from outcar_extxyz import find_outcar, iter_force_tables, maybe_subtract_d3, parse_header, write_frame
-from siv_shelf import RULES, allocate_quotas
+from .outcar_extxyz import find_outcar, iter_force_tables, maybe_subtract_d3, parse_header, write_frame
+from .siv_shelf import RULES, allocate_quotas
 
 
 # if one changes the structure of the caches, or how they are processed, then changing the scheme_version automatially
 # will disqualify old versions, rather than stale cached data throwing a spanner in the works. 
 scheme_version = 1
-
-
-def parser() -> argparse.ArgumentParser:
-    """Build the command-line parser for the dataset collector.
-    """
-
-    ap = argparse.ArgumentParser(description="Rule-driven NEB dataset collector.")
-    ap.add_argument(
-        "--rules",
-        type=Path,
-        default=Path(__file__).with_name("siv_rules.yml"),
-        help="Path to the collector rules YAML.",
-    )
-    return ap
 
 
 def load_rules_yaml(path: Path) -> dict[str, object]:
@@ -77,8 +62,13 @@ def load_rules_yaml(path: Path) -> dict[str, object]:
         ValueError: If the configuration is missing required keys or contains
             invalid values.
     """
-    # load the cofig: 
-    with path.open("r", encoding="utf-8") as fh:
+    rules_path = path.expanduser()
+    if not rules_path.is_absolute():
+        rules_path = (Path.cwd() / rules_path).resolve()
+    base_dir = rules_path.parent
+
+    # load the cofig:
+    with rules_path.open("r", encoding="utf-8") as fh:
         config = yaml.safe_load(fh)
 
     # The yaml checks:
@@ -120,7 +110,19 @@ def load_rules_yaml(path: Path) -> dict[str, object]:
     if rule_name not in RULES:
         raise ValueError(f"Unknown rule: {rule_name}")
 
+    outputs = config["outputs"]
+    outputs["out_dir"] = str(_resolve_relative_path(outputs["out_dir"], base_dir))
+    for source in config["sources"]:
+        source["neb_root"] = str(_resolve_relative_path(source["neb_root"], base_dir))
+
     return config
+
+
+def _resolve_relative_path(value: object, base_dir: Path) -> Path:
+    path = Path(str(value)).expanduser()
+    if path.is_absolute():
+        return path.resolve()
+    return (base_dir / path).resolve()
 
 
 def cache_path_for(cache_dir: Path, source_name: str) -> Path:
@@ -670,12 +672,10 @@ def write_outputs(
         encoding="utf-8",
     )
 
+def run_neb_curation(rules_path: Path) -> dict[str, object]:
+    """Run the full NEB dataset synthesis pipeline for one rules file."""
 
-def main() -> None:
-    """Run the full NEB dataset synthesis pipeline."""
-
-    args = parser().parse_args()
-    config = load_rules_yaml(args.rules) # load config file
+    config = load_rules_yaml(rules_path)
 
     cache_dir = Path(config["outputs"]["out_dir"]) / ".cache"
     # Build each source catalogue independently so caching and failures stay
@@ -689,7 +689,10 @@ def main() -> None:
     # select from that a smaller subset of data. 
     split_rows = split_pool(selected_rows, config["split"]) # split into train/val/test.
     write_outputs(selected_rows, split_rows, config, source_allocations) # write the output files.
+    return config
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(
+        "Use `mlip-ft <family> --curate-neb --inputs <path/to/siv_rules.yml>` instead."
+    )

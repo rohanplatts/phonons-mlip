@@ -47,10 +47,20 @@ class SnbConfig:
     settings: SnbSettings
 
 
-def resolve_config_path(config: str | Path | None, repo_root: Path = REPO_ROOT) -> Path:
+def resolve_config_path(
+    config: str | Path | None,
+    repo_root: Path = REPO_ROOT,
+    inputs: str | Path | None = None,
+) -> Path:
     if config is not None:
         path = Path(config)
         return path if path.is_absolute() else (Path.cwd() / path).resolve()
+
+    if inputs is not None:
+        input_path = Path(inputs)
+        candidate = (input_path / "config.yml") if input_path.is_dir() else input_path
+        if candidate.exists():
+            return candidate.resolve()
 
     cwd_config = Path.cwd() / "config.yml"
     if cwd_config.exists():
@@ -73,8 +83,12 @@ def resolve_path(run_root: Path, value: str | Path | None) -> Path | None:
     return path if path.is_absolute() else (run_root / path).resolve()
 
 
-def load_config(config_path: str | Path | None = None, repo_root: Path = REPO_ROOT) -> SnbConfig:
-    path = resolve_config_path(config_path, repo_root=repo_root)
+def load_config(
+    config_path: str | Path | None = None,
+    repo_root: Path = REPO_ROOT,
+    inputs: str | Path | None = None,
+) -> SnbConfig:
+    path = resolve_config_path(config_path, repo_root=repo_root, inputs=inputs)
     raw = load_yaml(path)
     run_root = path.parent
 
@@ -84,7 +98,7 @@ def load_config(config_path: str | Path | None = None, repo_root: Path = REPO_RO
 
     defaults = SnbDefaults(
         model_name=str(defaults_raw.get("model_name") or "mace-mpa-0-medium"),
-        results_root=resolve_path(run_root, defaults_raw.get("results_root")) or (run_root / "resultsSNB"),
+        results_root=resolve_path(run_root, defaults_raw.get("results_root") or defaults_raw.get("outputs_root")) or (run_root / "resultsSNB"),
         models_root=resolve_path(run_root, defaults_raw.get("models_root")) or (run_root / "assets/models"),
         bulk=resolve_path(run_root, defaults_raw.get("bulk")),
         defect=resolve_path(run_root, defaults_raw.get("defect")),

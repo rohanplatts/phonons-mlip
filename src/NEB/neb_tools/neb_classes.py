@@ -48,6 +48,7 @@ class NEBInputs:
     remap_f_i: bool
     include_vdw: bool
     compare: bool = False
+    report_benchmark: bool = False
     overwrite: bool = False
     models_root: Path | None = None
     results_root: Path | None = None

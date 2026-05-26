@@ -1,0 +1,49 @@
+outputs:
+  out_dir: ../1_curated_data
+  prefix: mace_demo_neb_ft
+
+sampling:
+  total_count: 50
+
+d3:
+  remove: true
+  method: pbe
+  damping: d3bj
+
+sources:
+  - name: ivac0_neb_output1
+    neb_root: ./output1
+    weight: 1.0
+    images:
+      - "00"
+      - "01"
+      - "02"
+      - "03"
+      - "04"
+      - "05"
+      - "06"
+
+rule:
+  name: force_energy_barrier_bias
+  percentile_bins:
+    - low: 0.00
+      high: 0.20
+      weight: 0.5
+    - low: 0.20
+      high: 0.40
+      weight: 1.0
+    - low: 0.40
+      high: 0.60
+      weight: 2.0
+    - low: 0.60
+      high: 0.80
+      weight: 1.0
+    - low: 0.80
+      high: 1.00
+      weight: 0.5
+
+split:
+  train_pct: 80
+  val_pct: 10
+  test_pct: 10
+  seed: 17

@@ -6,35 +6,53 @@ from pathlib import Path
 
 import argparse
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Literal
 import matplotlib
 import numpy as np
 import yaml
 from ase import Atoms
 from ase.io import read, write
-import torch
 
 if __package__ in (None, ""):
     # Allow running as a script from the repo root.
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    repo_root = Path(__file__).resolve().parents[2]
+    src_root = repo_root / "src"
+    if str(src_root) not in sys.path:
+        sys.path.insert(0, str(src_root))
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
     __package__ = "mlip_phonons"
 
-from .get_calc import get_calc_object
-from .relax import relax
+from common.get_calc import get_calc_object
+from common.benchmarking import maybe_fan_out
+from common.relax import relax
 from .phonons import get_phonons, get_band_structure, get_dos, write_gamma_band_yaml_for_plumipy
 from .plot import obj_plot_band, obj_plot_band_dos, obj_plot_dos
 from .tools.plumipy_conversions import write_contcar_for_plumipy, write_minimal_outcar_for_plumipy
-from .config_classes import ExecutiveCfg, ModelCfg, StructureCfg
+from .config_classes import ExecutiveCfg, ModelCfg, OutputPlan, StructureCfg
 
 
 repo_root = Path(__file__).resolve().parents[2]
+supported_models_path = repo_root / "SUPPORTED_MODELS.yml"
+
+DEFAULT_NAME_TEMPLATES: dict[str, str] = {
+    "relax_traj": "{base}_relax.traj",
+    "relaxed_poscar": "{base}_relaxed.poscar",
+    "phonons_obj": "{base}_phonons.yaml",
+    "force_constants": "{base}_force_constants.yaml",
+    "phonon_dos_npz": "{base}_phonon_dos.npz",
+    "phonon_band_yaml": "{base}_phonon_band.yaml",
+    "phonon_band_plot": "{base}_phonon_band_plot.png",
+    "phonon_dispersion_dos_plot": "{base}_phonon_dispersion_dos.png",
+    "phonon_dos_plot": "{base}_phonon_dos.png",
+    "band_plumipy": "{base}_band.yaml",
+    "contcar_gs_plumipy": "{base}_CONTCAR_GS",
+    "outcar_gs_plumipy": "{base}_OUTCAR_GS",
+}
 
 
 matplotlib.use("Agg")  # no GUI, no .show()
-if not torch.cuda.is_available():
-    raise RuntimeError("CUDA not available (check node).") # included for hpc use
-torch.set_default_device("cuda") #TODO: make this configurable?
 
 # ════════════════════════════════════
 # private helpers (use _ to indicate these, not intended to be called globally
@@ -52,6 +70,15 @@ def _load_yaml(path: Path) -> dict[str, Any]:
     """
     with path.open("r", encoding="utf-8") as handle:
         return yaml.safe_load(handle)
+
+
+def _load_supported_models() -> dict[str, Any]:
+    """Load the shared model registry."""
+    if not supported_models_path.exists():
+        return {}
+    raw = _load_yaml(supported_models_path) or {}
+    models = raw.get("models", raw) or {}
+    return models if isinstance(models, dict) else {}
 
 def _get_config_path(config: dict[str, Any], key: str) -> str | None:
     """Read a path-like config value from either top-level or a paths section."""
@@ -157,6 +184,25 @@ def _is_identity_supercell(sc: tuple[int, int, int] | np.ndarray) -> bool:
     if isinstance(sc, tuple):
         return sc == (1, 1, 1)
     return np.array_equal(sc, np.eye(3, dtype=int))
+
+
+def build_output_plan(
+    exec_cfg: ExecutiveCfg,
+    model: ModelCfg,
+    structure: StructureCfg,
+    run_root: Path,
+) -> OutputPlan:
+    base = f"{model.name}_{structure.name}"
+    templates = dict(DEFAULT_NAME_TEMPLATES)
+    templates.update(exec_cfg.output_name_templates)
+    names = {k: v.format(base=base, model=model.name, structure=structure.name) for k, v in templates.items()}
+
+    results_root = (run_root / exec_cfg.results_root / structure.name).resolve()
+    raw_dir = results_root / exec_cfg.raw_subdir
+    plot_dir = results_root / exec_cfg.plot_subdir
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    plot_dir.mkdir(parents=True, exist_ok=True)
+    return OutputPlan(results_root=results_root, raw_dir=raw_dir, plot_dir=plot_dir, names=names)
 
 
 # ════════════════════════════════════
@@ -319,123 +365,6 @@ if False:
 # for same runs it WILL rewrite. 
 # ════════════════════════════════════
 
-
-
-if False: # (added this to config_classes)
-    # THE NAMES OF THE FILES THEMSELVES
-    DEFAULT_NAME_TEMPLATES: dict[str, str] = {
-        # raw
-        "relax_traj": "{base}_relax.traj",
-        "relaxed_poscar": "{base}_relaxed.poscar",
-        "phonons_obj": "{base}_phonons.yaml",
-        "force_constants": "{base}_force_constants.yaml",
-        "phonon_dos_npz": "{base}_phonon_dos.npz",
-        "phonon_band_yaml": "{base}_phonon_band.yaml",
-        # plots (optional)
-        "phonon_band_plot": "{base}_phonon_band_plot.png",
-        "phonon_dispersion_dos_plot": "{base}_phonon_dispersion_dos.png",
-        "phonon_dos_plot": "{base}_phonon_dos.png",
-        # Plumipy
-        "band_plumipy": "{base}_band.yaml",
-        "contcar_gs_plumipy": "{base}_CONTCAR_GS",
-        "outcar_gs_plumipy": "{base}_OUTCAR_GS"
-    }
-    # THE DIRECTORIES THE FILES ARE WRITTEN TO. 
-    @dataclass(frozen=True)
-    class OutputPlan:
-        """Resolved output directories and filename mappings.
-
-        Attributes:
-            results_root (Path): Root output directory for this run.
-            raw_dir (Path): Directory for raw outputs.
-            plot_dir (Path): Directory for plot outputs.
-            names (dict[str, str]): Output name templates mapped to keys.
-        """
-        results_root: Path
-        raw_dir: Path
-        plot_dir: Path
-        names: dict[str, str]
-
-        def raw(self, key: str) -> Path:
-            """Resolve a raw output path by key.
-
-            Args:
-                key (str): Output name key.
-
-            Returns:
-                Path: Resolved raw output path.
-            """
-            if key not in self.names:
-                raise KeyError(f"Unknown output key: {key}")
-            p = _resolve_path(self.raw_dir, self.names[key])
-            assert p is not None
-            return p
-
-        def plot(self, key: str) -> Path:
-            """Resolve a plot output path by key.
-
-            Args:
-                key (str): Output name key.
-
-            Returns:
-                Path: Resolved plot output path.
-            """
-            if key not in self.names:
-                raise KeyError(f"Unknown output key: {key}")
-            p = _resolve_path(self.plot_dir, self.names[key])
-            assert p is not None
-            return p
-
-        def plot_plumipy(self, key: str) -> Path: 
-            """Resolve a plumipy plot output path by key.
-
-            Args:
-                key (str): Output name key.
-
-            Returns:
-                Path: Resolved plumipy output path.
-            """
-            if key not in self.names:
-                raise KeyError(f"Unknown output key: {key}")
-            p = _resolve_path(self.raw_dir / "Plumipy_Files", self.names[key])
-            assert p is not None
-            return p
-
-    # ASSEMBLING THE NAMES AND OUTPUT DIRECTORIES INTO AN OUTPUT PLAN
-
-    def build_output_plan(
-        exec_cfg: ExecutiveCfg,
-        model: ModelCfg,
-        structure: StructureCfg,
-        run_root: Path,
-    ) -> OutputPlan:
-        """Create an OutputPlan for a specific model/structure run.
-
-        Args:
-            exec_cfg (ExecutiveCfg): Execution configuration.
-            model (ModelCfg): Model configuration.
-            structure (StructureCfg): Structure configuration.
-            run_root (Path): Root directory to resolve relative paths.
-
-        Returns:
-            OutputPlan: Resolved output plan.
-        """
-
-        # THE BASE IDENTIFIER FOR THE FILES
-        base = f"{model.name}_{structure.name}"
-
-        templates = dict(DEFAULT_NAME_TEMPLATES) # ensures its a dictionary.copy() 
-        templates.update(exec_cfg.output_name_templates)
-
-        names = {k: v.format(base=base, model=model.name, structure=structure.name) for k, v in templates.items()}
-
-        results_root = (run_root / exec_cfg.results_root / model.name / structure.name).resolve()
-        raw_dir = results_root / exec_cfg.raw_subdir
-        plot_dir = results_root / exec_cfg.plot_subdir
-        raw_dir.mkdir(parents=True, exist_ok=True)
-        plot_dir.mkdir(parents=True, exist_ok=True)
-
-        return OutputPlan(results_root=results_root, raw_dir=raw_dir, plot_dir=plot_dir, names=names)
 
 
 # ════════════════════════════════════
@@ -824,7 +753,22 @@ def step_plumipy_conversion(
     state.note_file("band_plumipy", band_path)
 
 
-def main() -> int:
+def _cuda_or_cpu(device: str) -> str:
+    if not str(device).startswith("cuda"):
+        return str(device)
+    try:
+        import torch
+    except ImportError:
+        print("CUDA requested but torch is not installed; falling back to CPU.")
+        return "cpu"
+    if not torch.cuda.is_available():
+        print("CUDA requested but not available; falling back to CPU.")
+        return "cpu"
+    torch.set_default_device(device)
+    return str(device)
+
+
+def main(argv: list[str] | None = None) -> int:
     """Entry point for the phonon pipeline command line .
 
     Returns:
@@ -845,16 +789,52 @@ def main() -> int:
     )
     parser.add_argument(
         "--config",
-        help=f"Path to config.yml (default: {repo_root / 'config.yml'})",
-        default=str(repo_root / "config.yml"),
+        help="Path to config.yml. If omitted, uses <inputs>/config.yml when available.",
+        default=None,
     )
-    args = parser.parse_args()
+    parser.add_argument("--inputs", type=Path, default=None, help="Directory containing POSCAR/CONTCAR inputs.")
+    parser.add_argument("--outputs", type=Path, default=None, help="Directory where phonon outputs are written.")
+    parser.add_argument("--models-root", type=Path, default=None, help="Root directory containing MLIP model files.")
+    parser.add_argument("--device", default=None, help="Calculator device.")
+    parser.add_argument("--dtype", default=None, help="Calculator dtype.")
+    parser.add_argument("--overwrite", action=argparse.BooleanOptionalAction, default=None)
+    args = parser.parse_args(argv)
 
-    config_path = Path(args.config).expanduser().resolve()
+    if args.config is not None:
+        config_path = Path(args.config).expanduser().resolve()
+    elif args.inputs is not None:
+        candidate = (Path(args.inputs).expanduser().resolve() / "config.yml").resolve()
+        if candidate.exists():
+            config_path = candidate
+        else:
+            cwd_config = (Path.cwd() / "config.yml").resolve()
+            if cwd_config.exists() and Path.cwd().resolve() != repo_root:
+                config_path = cwd_config
+            else:
+                raise FileNotFoundError(
+                    f"Missing config.yml. Pass --config PATH or place config.yml in the input directory: {candidate}"
+                )
+    else:
+        cwd_config = (Path.cwd() / "config.yml").resolve()
+        if cwd_config.exists() and Path.cwd().resolve() != repo_root:
+            config_path = cwd_config
+        else:
+            raise FileNotFoundError(
+                "Missing config.yml. Pass --config PATH or place config.yml in the current working directory or input directory."
+            )
+
     run_root = config_path.parent
 
     config = _load_yaml(config_path)
-    defaults_cfg = (config.get("mlip_phonons", {}) or {}).get("defaults", {}) or {}
+    fanout_rc = maybe_fan_out("phonons", config_path=config_path, config=config)
+    if fanout_rc is not None:
+        return fanout_rc
+    if not isinstance(config.get("models"), dict) or not config.get("models"):
+        config["models"] = _load_supported_models()
+    global_defaults = config.get("defaults", {}) or {}
+    workflow_cfg = ((config.get("workflows", {}) or {}).get("phonons", {}) or {})
+    legacy_defaults_cfg = (config.get("mlip_phonons", {}) or {}).get("defaults", {}) or {}
+    defaults_cfg = {**global_defaults, **legacy_defaults_cfg, **workflow_cfg}
     default_model = defaults_cfg.get("model_name")
     model_name = args.model_name or default_model
     if not model_name:
@@ -867,22 +847,38 @@ def main() -> int:
 
     try:
         exec_cfg = ExecutiveCfg.from_config(config)
+        if "plots" in workflow_cfg:
+            exec_cfg = replace(exec_cfg, plots=bool(workflow_cfg["plots"]))
+        if args.outputs is not None:
+            exec_cfg = replace(exec_cfg, results_root=Path(args.outputs))
+        elif workflow_cfg.get("outputs") is not None:
+            exec_cfg = replace(exec_cfg, results_root=Path(workflow_cfg["outputs"]))
+        elif global_defaults.get("outputs_root") is not None:
+            exec_cfg = replace(exec_cfg, results_root=Path(global_defaults["outputs_root"]) / "phonons")
         model_cfg = ModelCfg.from_config(config, model_name)
 
         assets_root_cfg = _get_config_path(config, "assets_root")
         structures_root_cfg = _get_config_path(config, "structures_root")
-        assets_root = _resolve_path(run_root, assets_root_cfg) if assets_root_cfg else (run_root / "assets")
-        structures_root = (
-            _resolve_path(run_root, structures_root_cfg)
-            if structures_root_cfg
-            else (run_root / "assets" / "structures")
-        )
+        assets_root = _resolve_path(run_root, assets_root_cfg) if assets_root_cfg else (repo_root / "assets")
+        inputs_root = args.inputs or workflow_cfg.get("inputs")
+        structures_root = _resolve_path(run_root, inputs_root) if inputs_root else None
+        if structures_root is None:
+            structures_root = (
+                _resolve_path(run_root, structures_root_cfg)
+                if structures_root_cfg
+                else (repo_root / "assets" / "structures")
+            )
+        models_root = args.models_root
+        if models_root is None:
+            models_root = _resolve_path(run_root, defaults_cfg.get("models_root")) or (assets_root / "models")
 
         structure_name = structure_override or model_cfg.default_structure
         structure_cfg = StructureCfg.from_config(config, structure_name)
 
         out = build_output_plan(exec_cfg, model_cfg, structure_cfg, run_root)
-        calc = get_calc_object(model_cfg.name, models_root= assets_root / "models")
+        device = _cuda_or_cpu(str(args.device or defaults_cfg.get("device") or "cuda"))
+        dtype = str(args.dtype or defaults_cfg.get("dtype") or "float32")
+        calc = get_calc_object(model_cfg.name, models_root=models_root, device=device, dtype=dtype)
 
         state = RunState()
 
@@ -916,8 +912,7 @@ def main() -> int:
     except Exception as e:
         msg = f"{model_name} failed. error is {e}. Moving on to next model."
         print(msg)
-        with open("test/errorlog.txt", "a", encoding="utf-8") as f:
-            f.write(msg + "\n")
+        return 1
 
     return 0
 
