@@ -1,6 +1,6 @@
-# mlip-phonons
+# mlip-workflows
 
-MLIP workflows for phonons, NEB/MEP, ShakeNBreak, and fine-tuning demos.
+MLIP command line workflows for phonons, NEB/MEP, ShakeNBreak giving vasp-improvable results (for computational efficiency) for 5 model families are supported by this package. Furthermore, mlip fine-tuning is supported fully for MACE and ORB model families, with petmad coming soon. The former two support LoRA and REPLAY fine tuning.
 
 ## Workflows
 
@@ -9,31 +9,32 @@ MLIP workflows for phonons, NEB/MEP, ShakeNBreak, and fine-tuning demos.
 - `mlip-snb --inputs <config-dir>` for ShakeNBreak defect workflows
 - `mlip-coup --inputs <config-dir>` for phonon-coupling analysis
 
+Examples of [SnB](demo/snb), [NEB](demo/neb), and [Phonon](demo/phonons) workflows are included.
+
 ## Fine Tuning
 
-Three demo families are included:
+Three families are included in fine-tuning. LoRA and REPLAY style fine tuning are available for MACE and ORB. Pet-mad is still running into some issues, I am yet to push that work.
 
-- [MACE](demo/fine_tuning/mace/README.md)
-- [ORB](demo/fine_tuning/orb/README.md)
-- [PET-MAD](demo/fine_tuning/petmad/README.md)
+## Benchmarking Supported for any MLIP-workflow
 
-Each family follows the same structure:
+All workflows are available to be benchmarked. That is, you can download any number of supported models (list found in [SUPPORTED_MODELS.yml](SUPPORTED_MODELS.yml), but, generally, any model in the MACE, Orb, PET-MAD, Tensornet, mattersim and CHGNet model families).
 
-`0_raw_inputs -> 1_curated_data -> 2_train -> 3_results -> 4_benchmark`
+If `defaults.model_name` is a list, the ordinary workflow command fans out once per model and runs each case in the model-specific environment from `SUPPORTED_MODELS.yml`. This enables you to take any workflow defined by its config.yml file, and then simply append model names to run the same workflow across however many models you like.
 
-The benchmark step compares the baseline model and the fine-tuned model on the same raw NEB input.
-
-## Benchmark Rule
-
-If `defaults.model_name` is a list, the ordinary workflow command fans out once per model and runs each case in the model-specific environment from `SUPPORTED_MODELS.yml`.
-
-For the fine-tuning demos, step 4 uses:
+For the fine-tuning demos, [step 4](demo/fine_tuning/mace/4_benchmark) shows this usage, with:
 
 - `mlip-neb --inputs demo/fine_tuning/<family>/4_benchmark --report-benchmark`
+
 
 ## Setup
 
 - Put model files under `assets/models/<family>/`
 - Register model environments in `SUPPORTED_MODELS.yml`
-- See [demo/fine_tuning/README.md](demo/fine_tuning/README.md) for the demo queue
-- See [src/NEB/NEB_quickstart.md](src/NEB/NEB_quickstart.md) for NEB details
+
+For all model families you are using, install and set up their corresponding environments according to [environments.md](docs/environments.md).
+
+Once you do that, you are done and free to run these workflows. More details on running the workflows can be found [here](docs/workflows).
+
+## Caveat
+
+Dependent on CUDA.
