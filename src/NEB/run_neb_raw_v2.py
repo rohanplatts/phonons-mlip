@@ -24,6 +24,7 @@ from NEB.neb_tools.neb_analysis import (
     build_images,
     energies_relative,
     map_final_to_initial_by_species,
+    normalize_image_cells,
     reaction_coordinate,
 )
 from NEB.neb_tools.neb_classes import NEBDefaults, NEBInputs, NEBOutputDirs, NEBResults
@@ -252,9 +253,9 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
 
     if args.report_benchmark:
         names = model_names(config)
-        if len(names) != 2:
+        if len(names) < 2:
             raise ValueError(
-                f"--report-benchmark requires exactly two models in defaults.model_name, got {len(names)}"
+                f"--report-benchmark requires at least two models in defaults.model_name, got {len(names)}"
             )
         results_root = benchmark_root(config_path, config)
         if not benchmark_results_ready(results_root, names):
@@ -376,13 +377,20 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
     #neb = SingleCalculatorNEB(images, k=k_spring, climb=False)
     
     images = build_images(a, b, n_images)
+    normalize_image_cells(images)
     
     
     # initial path with only MLIP  
     for img in images:
         img.calc = calc_mlip
 
-    neb = NEB(images, k=defaults.k_spring_mlip, climb=False, allow_shared_calculator = True)
+    neb = NEB(
+        images,
+        k=defaults.k_spring_mlip,
+        climb=False,
+        method="improvedtangent",
+        allow_shared_calculator=True,
+    )
 
     print('Interpolating middle images')
 
@@ -407,7 +415,13 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
             img.calc = calc_vdw
 
         # reuse the same images; NEB object can be reused or rebuilt
-        neb = NEB(images, k=defaults.k_spring, climb=False, allow_shared_calculator=True)
+        neb = NEB(
+            images,
+            k=defaults.k_spring,
+            climb=False,
+            method="improvedtangent",
+            allow_shared_calculator=True,
+        )
 
         print("assigning opts2 (Refining with D3)")
         opts2 = FIRE(
@@ -429,7 +443,13 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
     # ════════════ second optimisation *along the path* (get the barrier)
     # neb_ci = SingleCalculatorNEB(images, k=k_spring, climb=True)
 
-    neb_ci = NEB(images, k=defaults.k_spring, climb=True, allow_shared_calculator = True)
+    neb_ci = NEB(
+        images,
+        k=defaults.k_spring,
+        climb=True,
+        method="improvedtangent",
+        allow_shared_calculator=True,
+    )
     print("assigning opt_ci")
     opt_ci = FIRE(
         neb_ci,

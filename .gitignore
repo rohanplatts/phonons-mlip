@@ -51,6 +51,7 @@ test
 
 # Defect-landscape generated data and run outputs
 assets/Rohan_data/
+assets/training_data_archive/
 assets/SNB_data/
 src/defect_landscape/data/
 src/defect_landscape/runs/

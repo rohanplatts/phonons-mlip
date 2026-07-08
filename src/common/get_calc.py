@@ -70,11 +70,23 @@ def _matgl_builder(model_dir: str) -> Callable[[Path, str, str], Any]:
         return PESCalculator(pot)
     return _build
 
-def _pet_builder(model_rel: str) -> Callable[[Path, str, str], Any]:
+def _pet_builder(model_rel: str, energy_variant: str | None = None) -> Callable[[Path, str, str], Any]:
     def _build(models_root: Path, device: str, dtype: str) -> Any:
         from metatomic.torch.ase_calculator import MetatomicCalculator
         model_path = _resolve_model_path(models_root, "petmad", "upet", _ensure_suffix(model_rel, ".pt"))
-        return MetatomicCalculator(str(model_path), device=device, non_conservative=True)
+        variants = None
+        if energy_variant is not None:
+            variants = {
+                "energy": energy_variant,
+                "non_conservative_forces": None,
+                "non_conservative_stress": None,
+            }
+        return MetatomicCalculator(
+            str(model_path),
+            device=device,
+            variants=variants,
+            non_conservative=True,
+        )
     return _build
 
 def _orb_builder(model_rel: str, precision: str) -> Callable[[Path, str, str], Any]:
@@ -193,7 +205,7 @@ model_build: Dict[str, Callable[[Path, str, str], Any]] = {
     "pet-omat-l-v1.0.0": _pet_builder("pet-omat-l-v1.0.0"),
     "pet-omat-m-v1.0.0": _pet_builder("pet-omat-m-v1.0.0"),
     "pet-omat-xl-v1.0.0": _pet_builder("pet-omat-xl-v1.0.0"),
-    "petmad_demo_neb_ft": _pet_builder("petmad_demo_neb_ft"),
+    "petmad_demo_neb_ft": _pet_builder("petmad_demo_neb_ft", energy_variant="neb_ft"),
 
     "mace_demo_neb_ft_lora": _mace_builder("mace_demo_neb_ft_lora"),
 

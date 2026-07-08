@@ -119,7 +119,7 @@ workflows:
 | `mlip-neb --inputs <input-dir>` | The input directory already contains `config.yml`. |
 | `mlip-neb --inputs <input-dir> --no-relax-endpoints` | You want to preserve the supplied endpoints exactly. |
 | `mlip-neb --inputs <input-dir> --compare` | You want to run the comparison/reporting path instead of a fresh NEB run. |
-| `mlip-neb --inputs <input-dir> --report-benchmark` | You want the baseline-vs-fine-tuned benchmark report for a two-model benchmark config. |
+| `mlip-neb --inputs <input-dir> --report-benchmark` | You want the benchmark report for a multi-model benchmark config with at least two models. |
 | `mlip-neb --config <path/to/config.yml>` | The config file is not inside the input directory. |
 
 ## Outputs

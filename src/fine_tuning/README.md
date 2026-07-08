@@ -31,6 +31,10 @@ Important differences:
 - MACE and PET-MAD keep curated `extxyz` outputs for training.
 - ORB uses the same curation step, then converts the curated `extxyz` files
   into ASE sqlite DBs before training.
+- MACE uses MACE LoRA through `mace.cli.run_train`.
+- ORB uses the repo-local ORB LoRA/replay trainer.
+- PET-MAD uses native metatrain PET LoRA through `mtt train`; full PET-MAD
+  fine tuning is available as an alternate launcher.
 - The benchmark step always uses `mlip-neb` with a list-valued
   `defaults.model_name`.
 

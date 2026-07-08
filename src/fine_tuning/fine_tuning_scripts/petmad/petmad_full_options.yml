@@ -1,0 +1,66 @@
+device: cpu
+base_precision: 32
+seed: 7
+
+architecture:
+  name: pet
+  training:
+    finetune:
+      method: full
+      read_from: ./pet-mad-v1.1.0.ckpt
+    loss: mse
+    learning_rate: 1.0e-5
+    batch_size: 1
+    num_epochs: 3
+
+training_set:
+  systems:
+    read_from: ./selected_data/ivac0_neb_stride5_train.extxyz
+    reader: ase
+    length_unit: angstrom
+  targets:
+    energy/neb_ft:
+      quantity: energy
+      read_from: ./selected_data/ivac0_neb_stride5_train.extxyz
+      reader: ase
+      key: REF_energy
+      unit: eV
+      description: PET-MAD full fine-tuning on curated NEB splits
+      forces:
+        read_from: ./selected_data/ivac0_neb_stride5_train.extxyz
+        reader: ase
+        key: REF_forces
+
+validation_set:
+  systems:
+    read_from: ./selected_data/ivac0_neb_stride5_val.extxyz
+    reader: ase
+    length_unit: angstrom
+  targets:
+    energy/neb_ft:
+      quantity: energy
+      read_from: ./selected_data/ivac0_neb_stride5_val.extxyz
+      reader: ase
+      key: REF_energy
+      unit: eV
+      forces:
+        read_from: ./selected_data/ivac0_neb_stride5_val.extxyz
+        reader: ase
+        key: REF_forces
+
+test_set:
+  systems:
+    read_from: ./selected_data/ivac0_neb_stride5_test.extxyz
+    reader: ase
+    length_unit: angstrom
+  targets:
+    energy/neb_ft:
+      quantity: energy
+      read_from: ./selected_data/ivac0_neb_stride5_test.extxyz
+      reader: ase
+      key: REF_energy
+      unit: eV
+      forces:
+        read_from: ./selected_data/ivac0_neb_stride5_test.extxyz
+        reader: ase
+        key: REF_forces

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_FILE="$SCRIPT_DIR/../../../../env/mace_env2.yml"
+ENV_FILE="$SCRIPT_DIR/orb_ft_env.yml"
 ENV_NAME="mace_env2"
 
 if ! command -v conda >/dev/null 2>&1; then

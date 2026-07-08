@@ -63,8 +63,42 @@ def _family_root(config_path: Path) -> Path:
     return config_path.parent.parent
 
 
-def _raw_output_root(config_path: Path) -> Path:
-    return _family_root(config_path) / "0_raw_inputs" / "output1"
+def _resolve_config_path_value(config_path: Path, value: Any) -> Path | None:
+    if value is None:
+        return None
+    path_value = Path(value).expanduser()
+    if path_value.is_absolute():
+        return path_value
+
+    repo_candidate = (REPO_ROOT / path_value).resolve()
+    if repo_candidate.exists():
+        return repo_candidate
+
+    config_candidate = (config_path.parent / path_value).resolve()
+    if config_candidate.exists():
+        return config_candidate
+
+    return config_candidate
+
+
+def _benchmark_reference_paths(config_path: Path, config: dict[str, Any]) -> tuple[Path, Path]:
+    defaults = config.get("defaults", {}) or {}
+    poscar_i = _resolve_config_path_value(config_path, defaults.get("poscar_i"))
+    dft_neb_dat = _resolve_config_path_value(config_path, defaults.get("dft_neb_dat"))
+
+    if poscar_i is not None and dft_neb_dat is not None and dft_neb_dat.exists():
+        dft_root = poscar_i.parent.parent
+        if dft_root.exists():
+            return dft_root, dft_neb_dat
+
+    raw_output_root = _family_root(config_path) / "0_raw_inputs" / "output1"
+    fallback_neb_dat = raw_output_root / "neb.dat"
+    if fallback_neb_dat.exists():
+        return raw_output_root, fallback_neb_dat
+
+    raise FileNotFoundError(
+        "Unable to resolve benchmark reference paths from config defaults or the fallback raw tree."
+    )
 
 
 def _readme_path(config_path: Path) -> Path:
@@ -151,7 +185,7 @@ def _render_family_section(
     lines = [
         BENCHMARK_START,
         "",
-        "The benchmark compares the baseline and fine-tuned models on the raw NEB input from `0_raw_inputs/output1`.",
+        "The benchmark compares the configured models on the resolved DFT NEB reference path.",
         "",
         "Command:",
         "",
@@ -162,9 +196,8 @@ def _render_family_section(
         "Compared models:",
         "",
     ]
-    for idx, name in enumerate(model_order):
-        role = "baseline" if idx == 0 else "fine-tuned"
-        lines.append(f"- {role}: `{name}`")
+    for idx, name in enumerate(model_order, start=1):
+        lines.append(f"- {idx}. `{name}`")
     lines.extend(
         [
             "",
@@ -194,17 +227,18 @@ def _render_family_section(
 
 
 def _upsert_readme_section(readme_path: Path, section: str) -> None:
-    if not readme_path.exists():
-        raise FileNotFoundError(f"Missing README for benchmark report: {readme_path}")
-    text = readme_path.read_text(encoding="utf-8")
-    pattern = re.compile(
-        rf"\n?{re.escape(BENCHMARK_START)}.*?{re.escape(BENCHMARK_END)}\n?",
-        re.DOTALL,
-    )
-    if pattern.search(text):
-        updated = pattern.sub("\n" + section, text)
+    if readme_path.exists():
+        text = readme_path.read_text(encoding="utf-8")
+        pattern = re.compile(
+            rf"\n?{re.escape(BENCHMARK_START)}.*?{re.escape(BENCHMARK_END)}\n?",
+            re.DOTALL,
+        )
+        if pattern.search(text):
+            updated = pattern.sub("\n" + section, text)
+        else:
+            updated = text.rstrip() + "\n\n" + section
     else:
-        updated = text.rstrip() + "\n\n" + section
+        updated = "# Benchmark Report\n\n" + section
     readme_path.write_text(updated.rstrip() + "\n", encoding="utf-8")
 
 
@@ -287,16 +321,13 @@ def generate_model_report(
 
 def generate_family_benchmark_report(config_path: Path, config: dict[str, Any]) -> list[BenchmarkModelReport]:
     names = model_names(config)
-    if len(names) != 2:
+    if len(names) < 2:
         raise ValueError(
-            f"Benchmark reports require exactly two models in defaults.model_name, got {len(names)}"
+            f"Benchmark reports require at least two models in defaults.model_name, got {len(names)}"
         )
 
     results_root = benchmark_root(config_path, config)
-    dft_root = _raw_output_root(config_path)
-    dft_neb_dat = dft_root / "neb.dat"
-    if not dft_neb_dat.exists():
-        raise FileNotFoundError(f"Missing DFT reference file for benchmark report: {dft_neb_dat}")
+    dft_root, dft_neb_dat = _benchmark_reference_paths(config_path, config)
 
     reports: list[BenchmarkModelReport] = []
     for name in names:
@@ -346,14 +377,14 @@ def generate_family_benchmark_report(config_path: Path, config: dict[str, Any]) 
         ref_e=ref_e,
         models=family_models_energy,
         out_png=family_energy_error_png,
-        title="NEB Energy Error: Baseline vs Fine-tuned",
+        title="NEB Energy Error: Model Comparison",
     )
     ces2.plot_energy_profiles(
         ref_s=ref_s,
         ref_e=ref_e,
         models=family_models_energy,
         out_png=family_energy_profiles_png,
-        title="NEB Energy Profiles: DFT, Baseline, and Fine-tuned",
+        title="NEB Energy Profiles: DFT and Model Comparison",
     )
     cps2.plot(
         ref_images=ref_images,
@@ -363,7 +394,7 @@ def generate_family_benchmark_report(config_path: Path, config: dict[str, Any]) 
         out_json=family_path_fidelity_json,
         dft_neb_dat=dft_neb_dat if dft_neb_dat.exists() else None,
         barrier_sources=barrier_sources,
-        title="NEB Path Fidelity: Baseline vs Fine-tuned",
+        title="NEB Path Fidelity: Model Comparison",
     )
 
     family_report_json = family_plot_dir / "report.json"

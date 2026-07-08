@@ -715,6 +715,7 @@ def step_plots(
 
 def step_plumipy_conversion(
         state: RunState,
+        exec_cfg: ExecutiveCfg,
         structure_cfg: StructureCfg,
         out: OutputPlan,
         mlip_calc: Any,
@@ -723,6 +724,7 @@ def step_plumipy_conversion(
 
     Args:
         state (RunState): Current run state.
+        exec_cfg (ExecutiveCfg): Execution configuration.
         structure_cfg (StructureCfg): Structure configuration.
         out (OutputPlan): Output plan for file locations.
         mlip_calc (Any): ASE-compatible calculator.
@@ -730,21 +732,23 @@ def step_plumipy_conversion(
     Returns:
         None
     """
+    if not exec_cfg.plumipy:
+        return
 
-    atoms_unrelaxed = state.phonopy_unitcell_unrelaxed # ase atoms
-    atoms = state.phonopy_unitcell_relaxed # ase atoms
-    atoms.calc = mlip_calc #fix these None type lame ass redlines elegantly. 
+    atoms = state.phonopy_unitcell_relaxed  # ase atoms
+    if atoms is None:
+        raise RuntimeError("Plumipy exports requested but relaxed atoms were not available.")
+    atoms.calc = mlip_calc
 
     # Write plumipy inputs
     contcar_path = out.plot_plumipy("contcar_gs_plumipy")
     outcar_path = out.plot_plumipy("outcar_gs_plumipy")
     band_path = out.plot_plumipy("band_plumipy")
     
-    if atoms:
-        print("writing contcar and outcar")
-        write_contcar_for_plumipy(atoms, contcar_path)
-        write_minimal_outcar_for_plumipy(atoms, outcar_path)
-        write_gamma_band_yaml_for_plumipy(state.phonon, band_path)
+    print("writing contcar and outcar")
+    write_contcar_for_plumipy(atoms, contcar_path)
+    write_minimal_outcar_for_plumipy(atoms, outcar_path)
+    write_gamma_band_yaml_for_plumipy(state.phonon, band_path)
     """
     python scripts/tools/plumipy_conversions.py 'small-omat-0'
     """
@@ -900,7 +904,7 @@ def main(argv: list[str] | None = None) -> int:
             raise RuntimeError("DOS requested but phonons were not computed.")
         state.phonon = get_dos(state.phonon, kpts_mesh=structure_cfg.kpts, outdir=None)
         step_plots(state, exec_cfg, structure_cfg, model_cfg, out)
-        step_plumipy_conversion(state, structure_cfg,out, calc) 
+        step_plumipy_conversion(state, exec_cfg, structure_cfg, out, calc) 
 
         print(f"||SUCCESS|| mode={state.mode_label} results={out.results_root}")
 

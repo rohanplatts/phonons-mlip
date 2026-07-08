@@ -173,12 +173,14 @@ class ExecutiveCfg:
 
     Attributes:
         plots (bool): Whether to generate plots.
+        plumipy (bool): Whether to generate Plumipy-ready exports.
         results_root (Path): Root output directory.
         raw_subdir (str): Subdirectory for raw outputs.
         plot_subdir (str): Subdirectory for plots.
         output_name_templates (dict[str, str]): Filename template overrides.
     """
     plots: bool = False
+    plumipy: bool = False
     results_root: Path = Path("results")
     raw_subdir: str = "raw"
     plot_subdir: str = "plot"
@@ -198,6 +200,7 @@ class ExecutiveCfg:
         out_names = ex.get("output_names", {}) or {}
         return ExecutiveCfg(
             plots=bool(ex.get("plots", False)),
+            plumipy=bool(ex.get("plumipy", False)),
             results_root=Path(ex.get("results_root", "results")),
             raw_subdir=str(ex.get("raw_subdir", "raw")),
             plot_subdir=str(ex.get("plot_subdir", "plot")),

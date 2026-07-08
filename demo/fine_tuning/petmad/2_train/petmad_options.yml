@@ -1,0 +1,72 @@
+device: cuda 
+base_precision: 32
+seed: 7
+
+architecture:
+  name: pet
+  training:
+    finetune:
+      method: lora
+      read_from: ./pet-mad-v1.1.0.ckpt
+      config:
+        rank: 8
+        alpha: 8
+        target_modules:
+          - input_linear
+          - output_linear
+    loss: mse
+    learning_rate: 1.0e-5
+    batch_size: 1
+    num_epochs: 3
+
+training_set:
+  systems:
+    read_from: ./selected_data/petmad_demo_neb_ft_train.extxyz
+    reader: ase
+    length_unit: angstrom
+  targets:
+    energy/neb_ft:
+      quantity: energy
+      read_from: ./selected_data/petmad_demo_neb_ft_train.extxyz
+      reader: ase
+      key: REF_energy
+      unit: eV
+      description: PET-MAD fine-tuning on curated NEB splits
+      forces:
+        read_from: ./selected_data/petmad_demo_neb_ft_train.extxyz
+        reader: ase
+        key: REF_forces
+
+validation_set:
+  systems:
+    read_from: ./selected_data/petmad_demo_neb_ft_val.extxyz
+    reader: ase
+    length_unit: angstrom
+  targets:
+    energy/neb_ft:
+      quantity: energy
+      read_from: ./selected_data/petmad_demo_neb_ft_val.extxyz
+      reader: ase
+      key: REF_energy
+      unit: eV
+      forces:
+        read_from: ./selected_data/petmad_demo_neb_ft_val.extxyz
+        reader: ase
+        key: REF_forces
+
+test_set:
+  systems:
+    read_from: ./selected_data/petmad_demo_neb_ft_test.extxyz
+    reader: ase
+    length_unit: angstrom
+  targets:
+    energy/neb_ft:
+      quantity: energy
+      read_from: ./selected_data/petmad_demo_neb_ft_test.extxyz
+      reader: ase
+      key: REF_energy
+      unit: eV
+      forces:
+        read_from: ./selected_data/petmad_demo_neb_ft_test.extxyz
+        reader: ase
+        key: REF_forces

@@ -1,0 +1,6 @@
+ortho CsPbI3 + defect in relaxed 80 atom supercell
+    0           ! automatically generate kpoints in grid
+
+Monkhorst Pack  ! Monkhorst-Pack FBZ sampling to generate kpoint grid
+    2 2 2       ! optimised k grid, scaled down for SC
+    0 0 0       ! no shift in k grid

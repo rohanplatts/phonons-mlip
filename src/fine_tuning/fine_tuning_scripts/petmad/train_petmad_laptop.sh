@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate mace_env2
+conda activate mace_env
 
 export XDG_CACHE_HOME="$SCRIPT_DIR/results/.cache"
 export HF_HOME="$SCRIPT_DIR/results/.huggingface"

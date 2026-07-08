@@ -6,8 +6,14 @@ architecture:
   name: pet
   training:
     finetune:
-      method: full
+      method: lora
       read_from: ./pet-mad-v1.1.0.ckpt
+      config:
+        rank: 8
+        alpha: 8
+        target_modules:
+          - input_linear
+          - output_linear
     loss: mse
     learning_rate: 1.0e-5
     batch_size: 1

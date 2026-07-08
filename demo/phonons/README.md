@@ -14,3 +14,5 @@ mlip-phonons --inputs demo/phonons/example2/input
 
 Each input directory contains a `config.yml` and the structure files the
 phonon workflow reads.
+
+The hBN example also enables Plumipy-ready exports in its `executive` config.

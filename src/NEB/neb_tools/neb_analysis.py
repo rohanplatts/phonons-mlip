@@ -191,6 +191,38 @@ def build_images(a, b, n_images: int):
     return [a] + [a.copy() for _ in range(n_images - 2)] + [b]
 
 
+def normalize_image_cells(images, *, tol: float = 1e-6) -> float:
+    """
+    Collapse tiny floating-point cell noise across a NEB band.
+
+    ASE NEB requires identical periodic cells. Some archived VASP paths differ only
+    at the 1e-7 to 1e-8 Angstrom level because of text serialization. If the cell
+    mismatch is within tol, copy the first image cell onto every image and return
+    the maximum absolute cell difference encountered.
+
+    Raises:
+        ValueError: if the mismatch exceeds tol.
+    """
+    if not images:
+        return 0.0
+
+    ref_cell = np.asarray(images[0].cell.array, dtype=float)
+    max_diff = 0.0
+    for img in images[1:]:
+        diff = float(np.max(np.abs(np.asarray(img.cell.array, dtype=float) - ref_cell)))
+        max_diff = max(max_diff, diff)
+
+    if max_diff > tol:
+        raise ValueError(
+            f"Variable-cell NEB paths are not supported by ASE NEB; max periodic cell mismatch {max_diff:.3e} "
+            f"exceeds tolerance {tol:.3e}"
+        )
+
+    for img in images[1:]:
+        img.cell = images[0].cell.copy()
+    return max_diff
+
+
 def energies_relative(images) -> np.ndarray:
     e = np.array([img.get_potential_energy() for img in images], dtype=float)
     return e - e[0]

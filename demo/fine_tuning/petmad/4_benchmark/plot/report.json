@@ -1,0 +1,90 @@
+{
+  "model_order": [
+    "pet-mad-s-v1.1.0",
+    "petmad_demo_neb_ft"
+  ],
+  "dft_root": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/petmad/0_raw_inputs/output1",
+  "dft_neb_dat": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/petmad/0_raw_inputs/output1/neb.dat",
+  "models": {
+    "pet-mad-s-v1.1.0": {
+      "model_name": "pet-mad-s-v1.1.0",
+      "model_dir": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/petmad/4_benchmark/results/pet-mad-s-v1.1.0",
+      "dft_root": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/petmad/0_raw_inputs/output1",
+      "dft_neb_dat": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/petmad/0_raw_inputs/output1/neb.dat",
+      "energy": {
+        "barrier_eV": 0.8431620656016321,
+        "deltaE_eV": -0.005721733713471622,
+        "barrier_abs_err_eV": 0.3330580656016321,
+        "deltaE_abs_err_eV": 0.007338733713471622,
+        "profile_rmse_eV": 0.45171291128673025
+      },
+      "path": {
+        "mean_rms_disp_A": 0.46012923921214055,
+        "max_rms_disp_A": 0.7351108356942744,
+        "mean_atom_disp_A": 0.39789713177394753,
+        "max_atom_disp_A": 2.4425432593207757,
+        "auc_rms_disp_A": 0.46127956231017087
+      },
+      "supplementary_barriers_eV": {
+        "DFT": 0.510104,
+        "pet-mad-s-v1.1.0": 0.843162
+      }
+    },
+    "petmad_demo_neb_ft": {
+      "model_name": "petmad_demo_neb_ft",
+      "model_dir": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/petmad/4_benchmark/results/petmad_demo_neb_ft",
+      "dft_root": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/petmad/0_raw_inputs/output1",
+      "dft_neb_dat": "/home/rnpla/projects/mlip_phonons/demo/fine_tuning/petmad/0_raw_inputs/output1/neb.dat",
+      "energy": {
+        "barrier_eV": 0.3651608861100044,
+        "deltaE_eV": -0.0008389212134716217,
+        "barrier_abs_err_eV": 0.1449431138899956,
+        "deltaE_abs_err_eV": 0.0024559212134716217,
+        "profile_rmse_eV": 0.21238788778529047
+      },
+      "path": {
+        "mean_rms_disp_A": 1.3599421201645572,
+        "max_rms_disp_A": 2.575203457560612,
+        "mean_atom_disp_A": 1.2027277267666567,
+        "max_atom_disp_A": 6.792784111786879,
+        "auc_rms_disp_A": 1.3633419754649687
+      },
+      "supplementary_barriers_eV": {
+        "DFT": 0.510104,
+        "petmad_demo_neb_ft": 0.365161
+      }
+    }
+  },
+  "path_fidelity": {
+    "grid_points": 401,
+    "dft_path_length_A": 0.533151110464366,
+    "models": {
+      "pet-mad-s-v1.1.0": {
+        "mean_rms_disp_A": 0.46012923921214055,
+        "max_rms_disp_A": 0.7351108356942744,
+        "mean_atom_disp_A": 0.39789713177394753,
+        "max_atom_disp_A": 2.4425432593207757,
+        "auc_rms_disp_A": 0.46127956231017087
+      },
+      "petmad_demo_neb_ft": {
+        "mean_rms_disp_A": 1.3599421201645572,
+        "max_rms_disp_A": 2.575203457560612,
+        "mean_atom_disp_A": 1.2027277267666567,
+        "max_atom_disp_A": 6.792784111786879,
+        "auc_rms_disp_A": 1.3633419754649687
+      },
+      "Linear interpolation": {
+        "mean_rms_disp_A": 1.369037156513728e-13,
+        "max_rms_disp_A": 2.8808550396773025e-13,
+        "mean_atom_disp_A": 1.3039273192035002e-13,
+        "max_atom_disp_A": 4.504706639868864e-13,
+        "auc_rms_disp_A": 1.372436620007e-13
+      }
+    },
+    "supplementary_barriers_eV": {
+      "DFT": 0.510104,
+      "pet-mad-s-v1.1.0": 0.843162,
+      "petmad_demo_neb_ft": 0.365161
+    }
+  }
+}

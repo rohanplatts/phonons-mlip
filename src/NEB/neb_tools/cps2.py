@@ -376,29 +376,30 @@ def plot(
         model_results[name] = summary
 
     lin_errs, lin_summary = compare_path(ref_images, linear_images, ref_grid)
-    model_curves["Linear interpolation"] = lin_errs
-    model_results["Linear interpolation"] = lin_summary
+    linear_label = "Linear interpolation"
+    model_curves[linear_label] = lin_errs
+    model_results[linear_label] = lin_summary
 
     _set_bandstyle_rcparams()
     fig = plt.figure(figsize=(9.2, 5.3), facecolor="white")
     ax = fig.add_subplot(111, facecolor="white")
 
     model_names = list(models)
-    colors = {**build_color_map(model_names), "Linear interpolation": "#ff7a7a"}
+    colors = {**build_color_map(model_names), linear_label: "#ff7a7a"}
 
-    for idx, name in enumerate([*model_names, "Linear interpolation"]):
+    for idx, name in enumerate([*model_names, linear_label]):
         curve = model_curves[name]
         ax.plot(
             ref_grid,
             curve,
-            "--" if name == "Linear interpolation" else "-",
-            lw=1.3 if name == "Linear interpolation" else 1.6,
+            "--" if name == linear_label else "-",
+            lw=1.3 if name == linear_label else 1.6,
             color=colors[name],
             alpha=0.98,
             solid_capstyle="round",
             dash_capstyle="round",
             label=name,
-            zorder=2 if name == "Linear interpolation" else 3 + idx,
+            zorder=2 if name == linear_label else 3 + idx,
         )
 
     ax.axhline(0.0, color="#355cde", lw=0.9, ls=":", alpha=0.85, zorder=1)

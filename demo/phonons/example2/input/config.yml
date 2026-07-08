@@ -1,10 +1,14 @@
 defaults:
-  model_name: mace-mpa-0-medium
+  model_name: mace-mpa-0-medium, mace-mpa-0-medium-ft-cspbi3-neutral
   structure: diamond_demo
   outputs_root: ../results
   device: cuda
   dtype: float32
   overwrite: true
+
+executive: 
+  plots: true
+
 structures:
   pure:
     diamond_demo:

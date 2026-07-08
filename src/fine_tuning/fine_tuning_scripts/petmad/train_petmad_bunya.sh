@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=petmad_ft
+#SBATCH --job-name=petmad_lora_ft
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -19,7 +19,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 module purge
 module load miniforge/25.3.0-3
 source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate mace_env2
+conda activate mace_env
 
 export XDG_CACHE_HOME="$SCRIPT_DIR/results/.cache"
 export HF_HOME="$SCRIPT_DIR/results/.huggingface"

@@ -23,6 +23,12 @@ models:
   mace-omat-0-medium:
     environment: mace_env
 
+  mace-mpa-0-medium-ft-cspbi3-neutral:
+    environment: mace_env
+
+  mace_neutral_charge_ft_08_07_26:
+    environment: mace_env
+
   mace-matpes-pbe-omat-ft:
     environment: mace_env
 
@@ -90,7 +96,7 @@ models:
     environment: mace_env2
 
   petmad_demo_neb_ft:
-    environment: mace_env2
+    environment: mace_env
 
   CHGNet-MatPES-PBE-2025.2.10-2.7M-PES:
     environment: matgl_env

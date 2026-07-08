@@ -13,9 +13,9 @@ five-step layout:
 
 Available workflows:
 
-- [MACE](/home/rnpla/projects/mlip_phonons/demo/fine_tuning/mace/README.md)
-- [ORB](/home/rnpla/projects/mlip_phonons/demo/fine_tuning/orb/README.md)
-- [PET-MAD](/home/rnpla/projects/mlip_phonons/demo/fine_tuning/petmad/README.md)
+- [MACE](/home/rnpla/projects/mlip_phonons/demo/fine_tuning/mace/README.md): MACE LoRA
+- [ORB](/home/rnpla/projects/mlip_phonons/demo/fine_tuning/orb/README.md): repo-local ORB LoRA/replay
+- [PET-MAD](/home/rnpla/projects/mlip_phonons/demo/fine_tuning/petmad/README.md): native metatrain PET LoRA
 
 Each workflow README describes the full path from step 0 through step 4 and
 shows the exact `mlip-neb --report-benchmark` command that generates the final

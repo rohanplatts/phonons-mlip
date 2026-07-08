@@ -97,12 +97,37 @@ def rewrite_config_for_model(config: dict[str, Any], model_name: str, *, config_
     defaults = dict(rewritten.get("defaults", {}) or {})
     defaults["model_name"] = model_name
     defaults["outputs_root"] = "."
-    models_root = defaults.get("models_root")
-    if models_root is not None:
-        models_root_path = Path(models_root)
-        if not models_root_path.is_absolute():
-            models_root_path = (config_path.parent / models_root_path).resolve()
-        defaults["models_root"] = str(models_root_path)
+
+    def _resolve_path_like(value: object) -> str:
+        path_value = Path(value).expanduser()
+        if path_value.is_absolute():
+            return str(path_value)
+
+        repo_candidate = (REPO_ROOT / path_value).resolve()
+        if repo_candidate.exists():
+            return str(repo_candidate)
+
+        config_candidate = (config_path.parent / path_value).resolve()
+        if config_candidate.exists():
+            return str(config_candidate)
+
+        return str(config_candidate)
+
+    path_keys = (
+        "models_root",
+        "results_root",
+        "structures_dir",
+        "poscar_i",
+        "poscar_f",
+        "dft_neb_dat",
+        "vasp_inputs_dir",
+    )
+    for key in path_keys:
+        value = defaults.get(key)
+        if value is None:
+            continue
+        defaults[key] = _resolve_path_like(value)
+
     rewritten["defaults"] = defaults
     return rewritten
 

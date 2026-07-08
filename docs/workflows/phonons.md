@@ -37,6 +37,8 @@ models:
 executive:
   # Turn plots on or off.
   plots: true
+  # Turn Plumipy-ready exports on or off.
+  plumipy: true
   # Where to write the results tree for this run.
   results_root: results/phonons
   # Raw files live here under results_root.
@@ -102,6 +104,7 @@ Configuration reference:
 | `models.<name>.model_path` | path | required | Checkpoint path relative to `assets/models/<family>/`. |
 | `models.<name>.material` | string | optional | Default structure label for that model. |
 | `executive.plots` | bool | `false` | Generate plots in addition to raw data. |
+| `executive.plumipy` | bool | `false` | Generate Plumipy-ready export files. |
 | `executive.results_root` | path | `results` | Root directory for all phonon outputs. |
 | `executive.raw_subdir` | string | `raw` | Name of the raw-output folder. |
 | `executive.plot_subdir` | string | `plot` | Name of the plot folder. |
@@ -130,7 +133,7 @@ Outputs:
 
 - raw phonon data under `executive.results_root`
 - plots under `executive.plot_subdir`
-- Plumipy-ready export files when requested
+- Plumipy-ready export files under `raw/Plumipy_Files` when `executive.plumipy` is true
 
 The key rule is:
 

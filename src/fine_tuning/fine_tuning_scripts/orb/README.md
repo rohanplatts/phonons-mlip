@@ -15,7 +15,7 @@ the training launchers here only deal with ORB training.
 - `replay_fine_tuning.sh`: bunya replay submission wrapper
 - `replay_lora_fine_tuning.sh`: bunya LoRA submission wrapper
 - `install_orb_env.sh`: creates or updates the conda environment from
-  `env/mace_env2.yml`
+  `orb_ft_env.yml`
 
 ## Setup
 
