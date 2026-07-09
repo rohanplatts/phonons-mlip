@@ -29,6 +29,9 @@ models:
   mace_neutral_charge_ft_08_07_26:
     environment: mace_env
 
+  mace_neutral_charge_ft_mh_09_07_26:
+    environment: mace_env
+
   mace-matpes-pbe-omat-ft:
     environment: mace_env
 

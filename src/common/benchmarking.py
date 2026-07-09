@@ -92,6 +92,10 @@ def benchmark_root(config_path: Path, config: dict[str, Any]) -> Path:
     return root if root.is_absolute() else (config_path.parent / root).resolve()
 
 
+def benchmark_model_ready(model_dir: Path) -> bool:
+    return (model_dir / "raw" / "neb_raw.npz").exists() and (model_dir / "raw" / "vasp_ci").exists()
+
+
 def rewrite_config_for_model(config: dict[str, Any], model_name: str, *, config_path: Path) -> dict[str, Any]:
     rewritten = copy.deepcopy(config)
     defaults = dict(rewritten.get("defaults", {}) or {})
@@ -178,9 +182,19 @@ def maybe_fan_out(workflow: str, *, config_path: Path, config: dict[str, Any]) -
     failures: list[tuple[str, int]] = []
     for name in names:
         model_dir = root / name
-        model_dir.mkdir(parents=True, exist_ok=True)
         model_config = model_dir / "config.yml"
-        dump_yaml(model_config, rewrite_config_for_model(config, name, config_path=config_path))
+        desired_config = rewrite_config_for_model(config, name, config_path=config_path)
+        if benchmark_model_ready(model_dir) and model_config.exists():
+            existing_config = load_yaml(model_config)
+            if existing_config == desired_config:
+                print(f"[{name}] skip (benchmark outputs already present): {model_dir}")
+                continue
+        elif benchmark_model_ready(model_dir) and not model_config.exists():
+            print(f"[{name}] skip (benchmark outputs already present): {model_dir}")
+            continue
+
+        model_dir.mkdir(parents=True, exist_ok=True)
+        dump_yaml(model_config, desired_config)
         rc = run_workflow(spec, config_path=model_config, environment=environments[name])
         if rc != 0:
             failures.append((name, rc))
