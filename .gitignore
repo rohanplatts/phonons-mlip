@@ -39,14 +39,14 @@ test/**
 #assets/models/**
 #results/**
 
-results*
-results*/**
+#results*
+#results*/**
 
 src/coupling_modes/PHONONCOUPLING.md
 
 logs/
 assets/training_data
-results
+#results
 test
 
 # Defect-landscape generated data and run outputs

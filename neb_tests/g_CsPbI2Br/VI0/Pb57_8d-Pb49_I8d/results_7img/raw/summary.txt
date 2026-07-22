@@ -1,0 +1,9 @@
+model=mace_neutral_charge_ft_mh_09_07_26
+n_images=7
+barrier_eV=0.855891
+deltaE_eV=0.100516
+dft_neb_dat=None
+vasp_mlip_d3_dir=/home/uqctwee1/PhD_wsl/projects/mlip/mlip-workflows/neb_tests/g_CsPbI2Br/VI0/Pb57_8d-Pb49_I8d/results_7img/raw/vasp_mlip_d3
+vasp_guess_dir=/home/uqctwee1/PhD_wsl/projects/mlip/mlip-workflows/neb_tests/g_CsPbI2Br/VI0/Pb57_8d-Pb49_I8d/results_7img/raw/vasp_mlip_d3
+vasp_ci_dir=/home/uqctwee1/PhD_wsl/projects/mlip/mlip-workflows/neb_tests/g_CsPbI2Br/VI0/Pb57_8d-Pb49_I8d/results_7img/raw/vasp_ci
+out_raw=/home/uqctwee1/PhD_wsl/projects/mlip/mlip-workflows/neb_tests/g_CsPbI2Br/VI0/Pb57_8d-Pb49_I8d/results_7img/raw

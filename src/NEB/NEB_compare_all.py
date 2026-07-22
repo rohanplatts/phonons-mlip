@@ -372,6 +372,10 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
 
     neb_cfg = config.get("neb", {}) or {}
     neb_defaults_cfg = neb_cfg.get("defaults", {}) or {}
+    
+    # add cfg for just defaults; only need this to get model name
+    # i'm sure there's probably an easier way to get this?? maybe already stored idk
+    defaults_cfg = config.get("defaults", {})
 
     default_results_root = resolve_path(
         run_root,
@@ -392,11 +396,16 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         candidate = structures_dir / "neb.dat"
         default_dft_neb_dat = candidate if candidate.exists() else None
     default_include_vdw = bool(neb_defaults_cfg.get("include_vdw", True))
+    
+    # model name default for arg parser
+    default_model_name = defaults_cfg.get("model_name")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=Path, default=config_path)
     parser.add_argument("--results-root", type=Path, default=default_results_root)
     parser.add_argument("--models-root", type=Path, default=default_models_root)
+    # ADDING MODEL NAME TO PARSER SO CAN USE IT LATER IF NO MODEL DIRECTORY INSIDE RESULTS
+    parser.add_argument("--model-name", type=str, default=str(default_model_name))
     parser.add_argument("--dft-neb-dat", type=Path, default=default_dft_neb_dat)
     parser.add_argument(
         "--include-vdw",
@@ -427,6 +436,7 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
     nebresults_root = args.results_root
     dft_neb_dat = args.dft_neb_dat
     models_root = args.models_root
+    model_name = args.model_name
     if not nebresults_root.exists():
         print(f"No NEBresults directory found at: {nebresults_root}")
         return 0
@@ -436,15 +446,24 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
 
     dft_s, dft_e = load_dft_neb_dat(dft_neb_dat)
 
-    model_dirs = sorted([p for p in nebresults_root.iterdir() if p.is_dir()])
-    if not model_dirs:
+    #model_dirs = sorted([p for p in nebresults_root.iterdir() if p.is_dir()])
+    result_dirs = sorted([p for p in nebresults_root.iterdir() if p.is_dir()])
+    if not result_dirs:
         print(f"No model folders found under {nebresults_root}")
         return 0
 
     all_metrics: list[dict[str, Any]] = []
-    for model_dir in model_dirs:
-        model = model_dir.name
-        raw_dir = model_dir / "raw"
+    for raw_dir in result_dirs:
+        #print("raw_dir =",raw_dir)
+        
+        # can FIX this by reading model name from config.yml
+        #model = model_dir.name
+        model = model_name
+        #print("model name =",model)
+        
+        # FIX THIS: model_dir is already =nebresults_root/raw because iterating over the results directory
+        #raw_dir = model_dir / "raw"
+        #npz_path = raw_dir / "neb_raw.npz"
         npz_path = raw_dir / "neb_raw.npz"
         if not npz_path.exists():
             print(f"[{model}] skip (no raw npz): {npz_path}")
@@ -454,7 +473,7 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         mlip_s = np.asarray(data["s_mlip"], dtype=float)
         mlip_e = np.asarray(data["e_mlip"], dtype=float)
 
-        plot_dir = model_dir / "plot"
+        plot_dir = raw_dir / "plot"
         out_png = plot_dir / "mep_compare.png"
 
         title = f"DFT vs {model} NEB MEP"
@@ -466,6 +485,7 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
             out_png=out_png,
             title=title,
         )
+        
         metrics.update(collect_speed_metrics(raw_dir))
 
         # Optional path/force quality metrics (may require ase + model backend installed).
@@ -526,8 +546,8 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         print(f"[{model}] wrote {out_png} + report.md/report.html in {plot_dir}")
 
     # Rank models after metrics are generated, using metrics.yaml files on disk
-    for model_dir in model_dirs:
-        metrics_path = model_dir / "plot" / "metrics.yaml"
+    for raw_dir in result_dirs:
+        metrics_path = raw_dir / "plot" / "metrics.yaml"
         if metrics_path.exists():
             all_metrics.append(yaml.safe_load(metrics_path.read_text(encoding="utf-8")))
 
@@ -627,6 +647,15 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         (rankings_dir / "rankings.txt").write_text("".join(lines), encoding="utf-8")
 
         print(f"Wrote rankings to {rankings_dir / 'rankings.txt'}")
+        
+        
+        # CONNOR ADDITION: 
+        # print MLIP, DFT image energies & errors to txt output for quick reference
+        # so don't need to use benchmark script (can't use if only checking one model)
+        image_list = np.arange(len(mlip_s))
+        s_diff = np.subtract(dft_s,mlip_s)
+        e_diff = np.subtract(dft_e,mlip_e)
+        np.savetxt(f"{plot_dir}/mep_compare.txt", np.transpose([image_list, dft_s, mlip_s, s_diff, dft_e, mlip_e, e_diff]), fmt=['%d', '%f', '%f', '%f', '%f', '%f', '%f'], delimiter=' ')
 
     return 0
 
