@@ -22,7 +22,7 @@ venv/
 
 
 # MLIP or MACE model files
-assets/models/**
+#assets/models/**
 !assets/models/mace/ivac0_neb_ft.model
 !assets/models/mace/ivac0_neb_ft_compiled.model
 !assets/models/mace/mace-mpa-0-medium.model
