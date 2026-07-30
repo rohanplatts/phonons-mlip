@@ -1,6 +1,6 @@
 defaults:
   model_name: mace_neutral_charge_ft_mh_09_07_26
-  outputs_root: ./results_5imgs
+  outputs_root: ./results_test
   poscar_i: POSCAR_i
   poscar_f: POSCAR_f
   dft_neb_dat: neb.dat

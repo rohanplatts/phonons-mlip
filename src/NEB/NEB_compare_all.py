@@ -458,7 +458,7 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         model = model_name
         
         # issue: model_dir is already = 'nebresults_root/raw' because iterating over the results directory
-        # only subdirectory is raw (at least from how I've been using it so far; may be conflicts more generally??)
+        # only subdirectories 'raw' & 'rankings' (at least from how I've been using it so far; may be conflicts more generally??)
         #raw_dir = model_dir / "raw"
         #npz_path = raw_dir / "neb_raw.npz"
         npz_path = raw_dir / "neb_raw.npz"
