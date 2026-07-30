@@ -28,7 +28,7 @@ venv/
 !assets/models/mace/mace-mpa-0-medium.model
 !assets/models/mace/mace-mpa-0-medium-ft-cspbi3*.model
 
-assets/structures/**
+!assets/structures/**
 !assets/structures/NEB
 
 .cache/
