@@ -22,13 +22,13 @@ venv/
 
 
 # MLIP or MACE model files
-#assets/models/**
+assets/models/**
 !assets/models/mace/ivac0_neb_ft.model
 !assets/models/mace/ivac0_neb_ft_compiled.model
 !assets/models/mace/mace-mpa-0-medium.model
 !assets/models/mace/mace-mpa-0-medium-ft-cspbi3*.model
 
-!assets/structures/**
+assets/structures/**
 !assets/structures/NEB
 
 .cache/
@@ -39,14 +39,14 @@ test/**
 #assets/models/**
 #results/**
 
-#results*
-#results*/**
+results*
+results*/**
 
 src/coupling_modes/PHONONCOUPLING.md
 
 logs/
 assets/training_data
-#results
+results
 test
 
 # Defect-landscape generated data and run outputs
