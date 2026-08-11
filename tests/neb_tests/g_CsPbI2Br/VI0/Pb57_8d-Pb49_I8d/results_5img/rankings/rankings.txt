@@ -1,0 +1,8 @@
+FINAL RANKING (lower ranking_metric is better)
+Sorted by ranking_metric, then barrier_abs_err_eV, energy_RMSE_eV, and force_RMSE_eV_per_A.
+ranking_metric = a*barrier_abs_err_eV + b*energy_RMSE_eV + c*force_RMSE_eV_per_A
+a = 1.000000, b = 1.000000, c = 1.000000
+If any non-zero-weight term is missing, ranking_metric = NA and that model is sorted last.
+
+ranking_metric  rank  model                               barrier_abs_err_eV  energy_RMSE_eV  deltaE_abs_err_eV  mlip_barrier_eV  dft_barrier_eV  mlip_deltaE_eV  dft_deltaE_eV  force_RMSE_eV_per_A  max_force_err_eV_per_A  max_F_perp_eV_per_A  Total NEB time (s)  Mlip dt  Mlip_d3 dt  mlip_d3 climb dt
+            NA     1  mace_neutral_charge_ft_mh_09_07_26            0.079591        0.140333           0.102386         0.857208        0.936799        0.100486      -0.001900                   NA                      NA                   NA                  NA       NA          NA                NA

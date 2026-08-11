@@ -27,6 +27,7 @@ assets/models/**
 !assets/models/mace/ivac0_neb_ft_compiled.model
 !assets/models/mace/mace-mpa-0-medium.model
 !assets/models/mace/mace-mpa-0-medium-ft-cspbi3*.model
+!assets/models/mace/mace_neutral_charge_ft_mh_09_07_26.model
 
 assets/structures/**
 !assets/structures/NEB
