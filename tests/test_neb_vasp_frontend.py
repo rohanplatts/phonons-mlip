@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from NEB.vasp_frontend import run_vasp_neb_directory, translate_vasp_neb_directory
+from NEB import run_neb_raw_v2
 
 
 class VaspNebFrontendTests(unittest.TestCase):
@@ -72,6 +73,38 @@ class VaspNebFrontendTests(unittest.TestCase):
             self.assertEqual(config["workflows"]["neb"]["n_images"], 9)
             self.assertEqual(runner.call_args.kwargs["run_root"], root.resolve())
             self.assertFalse((root / "config.yml").exists())
+
+    def test_cli_forwards_vasp_directory_without_yaml_lookup(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb")
+            with patch("NEB.vasp_frontend.run_vasp_neb_directory", return_value=31) as frontend:
+                rc = run_neb_raw_v2.main(["--vasp", str(root)], repo_root=Path(tmp) / "repo")
+
+            self.assertEqual(rc, 31)
+            frontend.assert_called_once_with(root, repo_root=Path(tmp) / "repo")
+            self.assertFalse((root / "config.yml").exists())
+
+    def test_cli_rejects_vasp_with_config_or_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb")
+            for conflicting in ("--config", "--inputs"):
+                with self.subTest(conflicting=conflicting):
+                    with self.assertRaises(SystemExit):
+                        run_neb_raw_v2.main(
+                            ["--vasp", str(root), conflicting, str(Path(tmp) / "other")],
+                            repo_root=Path(tmp) / "repo",
+                        )
+
+    def test_cli_rejects_legacy_vasp_overrides(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb")
+            for extra in (("--n-images", "11"), ("model-name",)):
+                with self.subTest(extra=extra):
+                    with self.assertRaises(SystemExit):
+                        run_neb_raw_v2.main(
+                            ["--vasp", str(root), *extra],
+                            repo_root=Path(tmp) / "repo",
+                        )
 
     def test_invalid_incar_values_fail(self) -> None:
         cases = [

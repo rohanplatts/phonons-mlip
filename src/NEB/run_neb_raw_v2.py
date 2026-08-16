@@ -460,7 +460,21 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("--config", type=Path, default=None)
     pre_parser.add_argument("--inputs", type=Path, default=None)
-    pre_args, _ = pre_parser.parse_known_args(argv)
+    pre_parser.add_argument("--vasp", type=Path, default=None)
+    pre_args, remaining = pre_parser.parse_known_args(argv)
+
+    if pre_args.vasp is not None:
+        if pre_args.config is not None or pre_args.inputs is not None:
+            pre_parser.error("--vasp cannot be combined with --config or --inputs")
+        if remaining:
+            pre_parser.error(
+                "--vasp accepts no other run options; use the VASP directory "
+                "INCAR directives and MLIP defaults"
+            )
+        from NEB.vasp_frontend import run_vasp_neb_directory
+
+        return run_vasp_neb_directory(pre_args.vasp, repo_root=repo_root)
+
     config_path = resolve_config_path(pre_args.config, repo_root=repo_root, inputs=pre_args.inputs)
 
     config = _load_yaml(config_path)
