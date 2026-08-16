@@ -9,6 +9,60 @@ Run it from an input directory:
 mlip-neb --inputs inputs/neb/input
 ```
 
+## VASP-native NEB input
+
+An existing fixed-image VASP NEB directory can be used directly:
+
+```bash
+mlip-neb --vasp /path/to/vasp-neb
+```
+
+The expected directory is:
+
+```text
+vasp-neb/
+  INCAR
+  KPOINTS
+  POTCAR
+  00/POSCAR
+  01/POSCAR
+  ...
+  0N/POSCAR
+```
+
+`INCAR` and every numbered `POSCAR` are required. `KPOINTS` and `POTCAR`
+are conventional VASP inputs and are carried through to exported VASP paths
+when present. The image folders must be exactly contiguous from `00` through
+the final folder, with no extra numeric folders.
+
+The VASP `IMAGES` tag counts intermediate images. The frontend converts this
+to MLIP-Workflows' total image count, including endpoints, by adding two. For
+example, `IMAGES = 7` uses `n_images = 9` in the shared NEB engine.
+
+Optional comment directives select the MLIP model:
+
+```text
+# MLIP_WORKFLOW = NEB
+# MLIP_MODEL = mace-omat-0-medium
+```
+
+The workflow directive is validated when present and must be `NEB` (case
+insensitive). If `MLIP_MODEL` is absent, the current MLIP fallback model
+(`ivac0_neb_ft`) is used. The frontend does not translate VASP ionic
+optimiser, spring, convergence, electronic, charge, spin, or dispersion tags;
+the existing MLIP defaults govern those settings.
+
+Intermediate VASP images are validated for the expected directory layout and
+`POSCAR` files, but the current MLIP NEB implementation regenerates its
+in-memory path with IDPP. This frontend does not alter the NEB scientific
+stages. Internally, the flow is:
+
+```text
+VASP directory -> translator -> in-memory raw config -> shared NEB engine
+```
+
+No temporary `config.yml` is created.
+
 Required input directory layout:
 
 ```text
@@ -96,6 +150,7 @@ Configuration reference:
 | `defaults.remap_f_i` | bool | `false` | Remap final to initial species ordering before interpolation. |
 | `defaults.include_vdw` | bool | `true` | Use the dispersion-corrected calculator path when available. |
 | `defaults.overwrite` | bool | `false` | Overwrite the output directory instead of resuming. |
+| `workflows.neb.n_images` | int | optional | Total MLIP image count, including endpoints; VASP `IMAGES` is translated to this value by adding two. |
 | `workflows.neb.defaults.n_images_fallback` | int | `9` | Fallback image count when `neb.dat` does not specify one. |
 | `workflows.neb.defaults.maxstep_mlip_guess` | float | `0.05` | Max atomic step for the first rough relaxation. |
 | `workflows.neb.defaults.fmax_mlip_guess` | float | `0.03` | Force threshold for the first rough relaxation. |
@@ -118,6 +173,7 @@ Command variants:
 | `mlip-neb --inputs <input-dir> --compare` | You want the NEB comparison/reporting path instead of a fresh NEB run. |
 | `mlip-neb --inputs <input-dir> --report-benchmark` | You want the baseline-vs-fine-tuned benchmark report for a two-model benchmark config. |
 | `mlip-neb --config <path/to/config.yml>` | The config file is not inside the input directory. |
+| `mlip-neb --vasp <vasp-neb-dir>` | You have a conventional fixed-image VASP NEB directory and want the MLIP NEB path from it. |
 
 Outputs:
 

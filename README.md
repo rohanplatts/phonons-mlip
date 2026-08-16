@@ -6,6 +6,7 @@ MLIP command line workflows for phonons, NEB/MEP, ShakeNBreak giving vasp-improv
 
 - `mlip-phonons --inputs <config-dir>` for phonons, DOS, and band structures
 - `mlip-neb --inputs <config-dir>` for NEB / MEP runs
+- `mlip-neb --vasp <vasp-neb-dir>` for a VASP-native NEB directory frontend
 - `mlip-snb --inputs <config-dir>` for ShakeNBreak defect workflows
 - `mlip-coup --inputs <config-dir>` for phonon-coupling analysis
 
@@ -34,6 +35,13 @@ For the fine-tuning demos, [step 4](demo/fine_tuning/mace/4_benchmark) shows thi
 For all model families you are using, install and set up their corresponding environments according to [environments.md](docs/environments.md).
 
 Once you do that, you are done and free to run these workflows. More details on running the workflows can be found [here](docs/workflows).
+
+For NEB, an existing fixed-image VASP directory can be passed directly with
+`mlip-neb --vasp <vasp-neb-dir>`. The frontend validates `INCAR`, `IMAGES`,
+and the numbered image `POSCAR` files, then feeds an in-memory configuration
+to the same NEB engine used by the YAML interface; it does not create a
+temporary `config.yml`. See the [NEB workflow guide](docs/workflows/neb.md)
+for the supported layout and optional MLIP comment directives.
 
 ## Caveat
 
