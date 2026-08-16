@@ -44,54 +44,42 @@ def _parse_args(
     argv: list[str] | None,
     *,
     default_config_path: Path,
-    default_model_name: str,
-    default_poscar_i: Path,
-    default_poscar_f: Path,
-    default_dft_neb_dat: Path | None,
-    default_models_root: Path,
-    default_results_root: Path,
-    default_vasp_inputs_dir: Path | None,
-    default_device: str,
-    default_dtype: str,
-    default_relax_endpoints: bool,
-    default_remap_f_i: bool,
-    default_include_vdw: bool,
-    default_overwrite: bool,
+    default_inputs: NEBInputs,
 ) -> NEBInputs:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=Path, default=default_config_path)
     parser.add_argument("--inputs", type=Path, default=argparse.SUPPRESS)
-    parser.add_argument("model_name", nargs="?", default=default_model_name)
-    parser.add_argument("--n-images", type=int, default=None)
-    parser.add_argument("--poscar-i", type=Path, default=default_poscar_i)
-    parser.add_argument("--poscar-f", type=Path, default=default_poscar_f)
-    parser.add_argument("--dft-neb-dat", type=Path, default=default_dft_neb_dat)
-    parser.add_argument("--models-root", type=Path, default=default_models_root)
-    parser.add_argument("--results-root", type=Path, default=default_results_root)
+    parser.add_argument("model_name", nargs="?", default=default_inputs.model_name)
+    parser.add_argument("--n-images", type=int, default=default_inputs.n_images)
+    parser.add_argument("--poscar-i", type=Path, default=default_inputs.poscar_i)
+    parser.add_argument("--poscar-f", type=Path, default=default_inputs.poscar_f)
+    parser.add_argument("--dft-neb-dat", type=Path, default=default_inputs.dft_neb_dat)
+    parser.add_argument("--models-root", type=Path, default=default_inputs.models_root)
+    parser.add_argument("--results-root", type=Path, default=default_inputs.results_root)
     parser.add_argument(
         "--vasp-inputs-dir",
         type=Path,
-        default=default_vasp_inputs_dir,
+        default=default_inputs.vasp_inputs_dir,
         help="Optional directory containing INCAR/KPOINTS/POTCAR to copy into VASP exports.",
     )
-    parser.add_argument("--device", type=str, default=default_device)
-    parser.add_argument("--dtype", type=str, default=default_dtype)
+    parser.add_argument("--device", type=str, default=default_inputs.device)
+    parser.add_argument("--dtype", type=str, default=default_inputs.dtype)
     parser.add_argument(
         "--relax-endpoints",
         action=argparse.BooleanOptionalAction,
-        default=default_relax_endpoints,
+        default=default_inputs.relax_endpoints,
         help="Relax the initial and final structures with MLIP before NEB.",
     )
     parser.add_argument(
         "--remap-f-i",
         action=argparse.BooleanOptionalAction,
-        default=default_remap_f_i,
+        default=default_inputs.remap_f_i,
         help="Apply within-species Hungarian remapping to the final endpoint before interpolation. This will also save the remapped poscar_f in the same folder as poscar_f.",
     )
     parser.add_argument(
         "--include-vdw",
         action=argparse.BooleanOptionalAction,
-        default=default_include_vdw,
+        default=default_inputs.include_vdw,
         help="Include D3 (vdW) error corrections when evaluating MLIP forces.",
     )
     parser.add_argument(
@@ -110,7 +98,7 @@ def _parse_args(
     parser.add_argument(
         "--overwrite",
         action=argparse.BooleanOptionalAction,
-        default=default_overwrite,
+        default=default_inputs.overwrite,
         help="Reuse (WARNING: if true it will overwrite previous results) the existing results directory instead of creating a new suffixed one.",
     )
 
@@ -152,21 +140,18 @@ def _resolve_path(root: Path, value: str | Path | None) -> Path | None:
     return root / p
 
 
-def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int:
-    repo_root = Path(repo_root) if repo_root is not None else REPO_ROOT
-    if str(repo_root / "src") not in sys.path:
-        sys.path.insert(0, str(repo_root / "src"))
+def _build_neb_inputs_and_defaults(
+    config: dict,
+    *,
+    run_root: Path,
+    repo_root: Path,
+) -> tuple[NEBInputs, NEBDefaults]:
+    """Lower the existing raw NEB config schema into execution inputs/defaults.
 
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("--config", type=Path, default=None)
-    pre_parser.add_argument("--inputs", type=Path, default=None)
-    pre_args, _ = pre_parser.parse_known_args(argv)
-    config_path = resolve_config_path(pre_args.config, repo_root=repo_root, inputs=pre_args.inputs)
-
-    config = _load_yaml(config_path)
-
-    run_root = config_path.parent 
-
+    This is intentionally the boundary shared by YAML-backed and future
+    non-YAML frontends. The merge order and fallback values mirror the legacy
+    ``main`` implementation.
+    """
     global_defaults = config.get("defaults", {}) or {}
     workflow_cfg = ((config.get("workflows", {}) or {}).get("neb", {}) or {})
     workflow_settings_cfg = workflow_cfg.get("settings", {}) or {}
@@ -174,7 +159,7 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
     neb_defaults_cfg = {
         **global_defaults,
         **(neb_cfg.get("defaults", {}) or {}),
-        **{k: v for k, v in workflow_cfg.items() if k != "settings"},
+        **{key: value for key, value in workflow_cfg.items() if key != "settings"},
     }
     neb_settings_cfg = {
         **(neb_cfg.get("settings", {}) or {}),
@@ -194,100 +179,72 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
     default_models_root = _resolve_path(run_root, neb_defaults_cfg.get("models_root")) or (
         repo_root / "assets" / "models"
     )
-    default_results_root = _resolve_path(run_root, neb_defaults_cfg.get("results_root") or neb_defaults_cfg.get("outputs_root")) or (
-        run_root / "resultsNEB"
+    default_results_root = _resolve_path(
+        run_root,
+        neb_defaults_cfg.get("results_root") or neb_defaults_cfg.get("outputs_root"),
+    ) or (run_root / "resultsNEB")
+    configured_n_images = neb_defaults_cfg.get("n_images")
+    default_inputs = NEBInputs(
+        model_name=str(neb_defaults_cfg.get("model_name") or "ivac0_neb_ft"),
+        n_images=None if configured_n_images is None else int(configured_n_images),
+        poscar_i=default_poscar_i,
+        poscar_f=default_poscar_f,
+        dft_neb_dat=default_dft_neb_dat,
+        relax_endpoints=bool(neb_defaults_cfg.get("relax_endpoints", True)),
+        remap_f_i=bool(neb_defaults_cfg.get("remap_f_i", False)),
+        include_vdw=bool(neb_defaults_cfg.get("include_vdw", True)),
+        overwrite=bool(neb_defaults_cfg.get("overwrite", False)),
+        models_root=default_models_root,
+        results_root=default_results_root,
+        vasp_inputs_dir=_resolve_path(run_root, neb_defaults_cfg.get("vasp_inputs_dir")),
+        device=str(neb_defaults_cfg.get("device") or "cuda"),
+        dtype=str(neb_defaults_cfg.get("dtype") or "float32"),
     )
-    default_vasp_inputs_dir = _resolve_path(run_root, neb_defaults_cfg.get("vasp_inputs_dir"))
-    default_model_name = str(neb_defaults_cfg.get("model_name") or "ivac0_neb_ft")
-    default_device = str(neb_defaults_cfg.get("device") or "cuda")
-    default_dtype = str(neb_defaults_cfg.get("dtype") or "float32")
-    default_relax_endpoints = bool(neb_defaults_cfg.get("relax_endpoints", True))
-    default_remap_f_i = bool(neb_defaults_cfg.get("remap_f_i", False))
-    default_include_vdw = bool(neb_defaults_cfg.get("include_vdw", True))
-    default_overwrite = bool(neb_defaults_cfg.get("overwrite", False))
-
     defaults = NEBDefaults(
         n_images_fallback=int(neb_settings_cfg.get("n_images_fallback", 9)),
-        # to quickly converge to an initial rough path
         maxstep_mlip_guess=float(neb_settings_cfg.get("maxstep_mlip_guess", 0.05)),
         fmax_mlip_guess=float(neb_settings_cfg.get("fmax_mlip_guess", 0.03)),
         steps_mlip_guess=int(neb_settings_cfg.get("steps_mlip_guess", 3000)),
         k_spring_mlip=float(neb_settings_cfg.get("k_spring_mlip", 0.6)),
         k_spring=float(neb_settings_cfg.get("k_spring", 0.6)),
-        # to finely converge to the final path
         maxstep_mlip_d3=float(neb_settings_cfg.get("maxstep_mlip_d3", 0.03)),
         fmax_mlip_d3=float(neb_settings_cfg.get("fmax_mlip_d3", 0.03)),
         steps_mlip_d3=int(neb_settings_cfg.get("steps_mlip_d3", 1400)),
-        # to now shift the images up the path to get the maximum.
         maxstep_ci=float(neb_settings_cfg.get("maxstep_ci", 0.03)),
         fmax_ci=float(neb_settings_cfg.get("fmax_ci", 0.03)),
         steps_ci=int(neb_settings_cfg.get("steps_ci", 1000)),
     )
-    
+    return default_inputs, defaults
 
-    
-    
 
+def run_neb_from_config(
+    config: dict,
+    *,
+    run_root: Path,
+    repo_root: Path | None = None,
+    inputs: NEBInputs | None = None,
+) -> int:
+    """Run the standard NEB engine from an already loaded config dictionary."""
+    resolved_repo_root = Path(repo_root) if repo_root is not None else REPO_ROOT
+    default_inputs, defaults = _build_neb_inputs_and_defaults(
+        config,
+        run_root=Path(run_root),
+        repo_root=resolved_repo_root,
+    )
+    return _run_neb(inputs if inputs is not None else default_inputs, defaults)
+
+
+def _run_neb(args: NEBInputs, defaults: NEBDefaults) -> int:
+    """Execute the unchanged scientific NEB workflow from resolved inputs."""
     from common.get_calc import get_calc_object
     from common.relax import relax
 
-    args = _parse_args(
-        argv,
-        default_config_path=config_path,
-        default_model_name=default_model_name,
-        default_poscar_i=default_poscar_i,
-        default_poscar_f=default_poscar_f,
-        default_dft_neb_dat=default_dft_neb_dat,
-        default_models_root=default_models_root,
-        default_results_root=default_results_root,
-        default_vasp_inputs_dir=default_vasp_inputs_dir,
-        default_device=default_device,
-        default_dtype=default_dtype,
-        default_relax_endpoints=default_relax_endpoints,
-        default_remap_f_i=default_remap_f_i,
-        default_include_vdw=default_include_vdw,
-        default_overwrite=default_overwrite,
-    )
-
     model_name = str(args.model_name)
-
-    if args.report_benchmark:
-        names = model_names(config)
-        if len(names) < 2:
-            raise ValueError(
-                f"--report-benchmark requires at least two models in defaults.model_name, got {len(names)}"
-            )
-        results_root = benchmark_root(config_path, config)
-        if not benchmark_results_ready(results_root, names):
-            fanout_rc = maybe_fan_out("neb", config_path=config_path, config=config)
-            if fanout_rc is not None and fanout_rc != 0:
-                return fanout_rc
-        generate_family_benchmark_report(config_path, config)
-        return 0
-
-    fanout_rc = maybe_fan_out("neb", config_path=config_path, config=config)
-    if fanout_rc is not None:
-        return fanout_rc
-
-    if args.compare:
-        from NEB.NEB_compare_all import main as compare_main
-
-        compare_argv: list[str] = ["--config", str(config_path)]
-        if args.results_root is not None:
-            compare_argv.extend(["--results-root", str(args.results_root)])
-        if args.models_root is not None:
-            compare_argv.extend(["--models-root", str(args.models_root)])
-        if args.dft_neb_dat is not None:
-            compare_argv.extend(["--dft-neb-dat", str(args.dft_neb_dat)])
-        compare_argv.append("--include-vdw" if args.include_vdw else "--no-include-vdw")
-        return compare_main(compare_argv, repo_root=repo_root)
-    
-    
-
     results_root = args.results_root
+    if results_root is None:
+        raise ValueError("NEB results_root must be resolved before execution.")
     out_raw = (results_root / "raw").resolve()
     out_raw.mkdir(parents=True, exist_ok=True)
-
 
     a, b = read_endpoints(args.poscar_i, args.poscar_f)
 
@@ -343,44 +300,29 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
 
     if args.relax_endpoints:
         enable_cache = True
-        if enable_cache: # allows the use of existing relaxed traj paths for initial and final points
-            if os.path.exists(out_raw/'relaxed_traj_i.traj'): 
-                a_relaxed = read(out_raw/'relaxed_traj_i.traj', index = -1) # index -1 to pull final
-            if os.path.exists(out_raw/'relaxed_traj_f.traj'):
-                b_relaxed = read(out_raw/'relaxed_traj_f.traj', index = -1)
+        if enable_cache:
+            if os.path.exists(out_raw / "relaxed_traj_i.traj"):
+                a_relaxed = read(out_raw / "relaxed_traj_i.traj", index=-1)
+            if os.path.exists(out_raw / "relaxed_traj_f.traj"):
+                b_relaxed = read(out_raw / "relaxed_traj_f.traj", index=-1)
 
         if not a_relaxed:
-            a_relaxed = relax(a, outdir = out_raw, filename = 'relaxed_traj_i.traj')
-            # write("POSCAR_i_relaxed.vasp", a_relaxed, format="vasp") # optional write 
-        if not b_relaxed: 
-            b_relaxed = relax(b, outdir = out_raw, filename = 'relaxed_traj_f.traj')
-            # write("POSCAR_f_relaxed.vasp", b_relaxed, format="vasp") # optional write
+            a_relaxed = relax(a, outdir=out_raw, filename="relaxed_traj_i.traj")
+        if not b_relaxed:
+            b_relaxed = relax(b, outdir=out_raw, filename="relaxed_traj_f.traj")
     else:
         a_relaxed = a
         b_relaxed = b
 
-    # relaxed with mlip + d3 calculator
     a = a_relaxed
-    b = b_relaxed 
+    b = b_relaxed
 
-
-    #a = relax(a, outdir = out_raw, filename = 'relaxed_traj_i.traj')
-    #b = relax(b, outdir = out_raw, filename = 'relaxed_traj_f.traj')
-
-    print('Choosing number of images and building the images')
+    print("Choosing number of images and building the images")
     n_images = choose_n_images(args.dft_neb_dat, defaults.n_images_fallback, args.n_images)
-    
-    # write the relaxed endpoints
-    #write(out_raw / "POSCAR_i_used.vasp", images[0], format="vasp")
-    #write(out_raw / "POSCAR_f_used_remapped.vasp", images[-1], format="vasp")
 
-    #neb = SingleCalculatorNEB(images, k=k_spring, climb=False)
-    
     images = build_images(a, b, n_images)
     normalize_image_cells(images)
-    
-    
-    # initial path with only MLIP  
+
     for img in images:
         img.calc = calc_mlip
 
@@ -392,8 +334,7 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         allow_shared_calculator=True,
     )
 
-    print('Interpolating middle images')
-
+    print("Interpolating middle images")
     neb.interpolate(method="idpp", mic=True)
 
     print("assigning opts1 (MLIP)")
@@ -414,7 +355,6 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         for img in images:
             img.calc = calc_vdw
 
-        # reuse the same images; NEB object can be reused or rebuilt
         neb = NEB(
             images,
             k=defaults.k_spring,
@@ -437,11 +377,7 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         except LoopDetected as exc:
             print(str(exc))
 
-    # snapshot pre-CI path for later VASP export
     images_pre_ci = [img.copy() for img in images]
-
-    # ════════════ second optimisation *along the path* (get the barrier)
-    # neb_ci = SingleCalculatorNEB(images, k=k_spring, climb=True)
 
     neb_ci = NEB(
         images,
@@ -457,7 +393,7 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         logfile=str(out_raw / "neb_ci.log"),
         maxstep=defaults.maxstep_ci,
     )
-    
+
     print("running opt_ci")
     attach_loop_guard(opt_ci, label="opt_ci")
     try:
@@ -471,18 +407,14 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
         images_ci=[img.copy() for img in images],
         vasp_inputs_dir=args.vasp_inputs_dir,
     )
-    output_dirs = NEBOutputDirs(out_raw=out_raw, vasp_mlip_d3_dir=vasp_mlip_d3_dir, vasp_ci_dir=vasp_ci_dir)
-
-    # ════════════ formatting data to be compared. 
+    output_dirs = NEBOutputDirs(
+        out_raw=out_raw,
+        vasp_mlip_d3_dir=vasp_mlip_d3_dir,
+        vasp_ci_dir=vasp_ci_dir,
+    )
 
     s_mlip = reaction_coordinate(images)
-    # get the cumulative distance along image chain. 
-    # (for each consecutive image pair, get the minimmum image displacement of every atom, 
-    # and get the euclidean norm of the full displacement. Then sum these)
-
-    e_mlip = energies_relative(images) 
-    # get the potential energy for each image
-    # and subtract the first images energy. 
+    e_mlip = energies_relative(images)
 
     results = NEBResults(
         s_mlip=s_mlip,
@@ -518,6 +450,71 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
     print(f"VASP pre-CI path written to {output_dirs.vasp_mlip_d3_dir}")
     print(f"VASP post-CI path written to {output_dirs.vasp_ci_dir}")
     return 0
+
+
+def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int:
+    repo_root = Path(repo_root) if repo_root is not None else REPO_ROOT
+    if str(repo_root / "src") not in sys.path:
+        sys.path.insert(0, str(repo_root / "src"))
+
+    pre_parser = argparse.ArgumentParser(add_help=False)
+    pre_parser.add_argument("--config", type=Path, default=None)
+    pre_parser.add_argument("--inputs", type=Path, default=None)
+    pre_args, _ = pre_parser.parse_known_args(argv)
+    config_path = resolve_config_path(pre_args.config, repo_root=repo_root, inputs=pre_args.inputs)
+
+    config = _load_yaml(config_path)
+
+    run_root = config_path.parent
+
+    default_inputs, _ = _build_neb_inputs_and_defaults(
+        config,
+        run_root=run_root,
+        repo_root=repo_root,
+    )
+
+    args = _parse_args(
+        argv,
+        default_config_path=config_path,
+        default_inputs=default_inputs,
+    )
+
+    if args.report_benchmark:
+        names = model_names(config)
+        if len(names) < 2:
+            raise ValueError(
+                f"--report-benchmark requires at least two models in defaults.model_name, got {len(names)}"
+            )
+        results_root = benchmark_root(config_path, config)
+        if not benchmark_results_ready(results_root, names):
+            fanout_rc = maybe_fan_out("neb", config_path=config_path, config=config)
+            if fanout_rc is not None and fanout_rc != 0:
+                return fanout_rc
+        generate_family_benchmark_report(config_path, config)
+        return 0
+
+    fanout_rc = maybe_fan_out("neb", config_path=config_path, config=config)
+    if fanout_rc is not None:
+        return fanout_rc
+
+    if args.compare:
+        from NEB.NEB_compare_all import main as compare_main
+
+        compare_argv: list[str] = ["--config", str(config_path)]
+        if args.results_root is not None:
+            compare_argv.extend(["--results-root", str(args.results_root)])
+        if args.models_root is not None:
+            compare_argv.extend(["--models-root", str(args.models_root)])
+        if args.dft_neb_dat is not None:
+            compare_argv.extend(["--dft-neb-dat", str(args.dft_neb_dat)])
+        compare_argv.append("--include-vdw" if args.include_vdw else "--no-include-vdw")
+        return compare_main(compare_argv, repo_root=repo_root)
+    return run_neb_from_config(
+        config,
+        run_root=run_root,
+        repo_root=repo_root,
+        inputs=args,
+    )
 
 
 if __name__ == "__main__":
