@@ -57,6 +57,22 @@ class VaspNebFrontendTests(unittest.TestCase):
             workflow = translate_vasp_neb_directory(root)["workflows"]["neb"]
             self.assertEqual(workflow["settings"], {"fmax_ci": 0.015})
 
+    def test_negative_spring_maps_its_magnitude_to_both_neb_stages(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb", incar="IMAGES = 7\nSPRING = -5\n")
+            workflow = translate_vasp_neb_directory(root)["workflows"]["neb"]
+            self.assertEqual(workflow["settings"], {"k_spring_mlip": 5.0, "k_spring": 5.0})
+
+    def test_nonnegative_spring_warns_and_is_not_mapped(self) -> None:
+        for spring in (0, 5):
+            with self.subTest(spring=spring), tempfile.TemporaryDirectory() as tmp:
+                root = self._directory(Path(tmp) / "neb", incar=f"IMAGES = 7\nSPRING = {spring}\n")
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter("always")
+                    workflow = translate_vasp_neb_directory(root)["workflows"]["neb"]
+                self.assertNotIn("settings", workflow)
+                self.assertTrue(any("different NEB semantics" in str(item.message) for item in caught))
+
     def test_positive_ediffg_warns_and_keeps_mlips_force_default(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self._directory(Path(tmp) / "neb", incar="IMAGES = 7\nEDIFFG = 0.02\n")
@@ -145,6 +161,8 @@ class VaspNebFrontendTests(unittest.TestCase):
             ("IMAGES = 7\n# MLIP_MODEL = first\n# MLIP_MODEL = second\n", "repeated"),
             ("IMAGES = 7\nEDIFFG = nan\n", "finite"),
             ("IMAGES = 7\nEDIFFG = -0.01\nEDIFFG = -0.02\n", "repeated EDIFFG"),
+            ("IMAGES = 7\nSPRING = nan\n", "finite"),
+            ("IMAGES = 7\nSPRING = -5\nSPRING = -4\n", "repeated SPRING"),
         ]
         for incar, expected in cases:
             with self.subTest(expected=expected), tempfile.TemporaryDirectory() as tmp:

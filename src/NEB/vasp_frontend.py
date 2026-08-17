@@ -24,13 +24,18 @@ _ASSIGNMENT_RE = re.compile(r"^\s*([A-Za-z][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$")
 _NUMERIC_FOLDER_RE = re.compile(r"\d+")
 # VASP ISIF 0, 1, and 2 vary ionic positions without changing cell shape or
 # volume; see https://vasp.at/wiki/ISIF.
+# VASP SPRING < 0 enables NEB and uses the magnitude as the inter-image spring
+# constant; ASE improvedtangent uses the same tangent-projected spring term.
+# Sources: https://vasp.at/wiki/index.php/SPRING and
+# https://wiki.fysik.dtu.dk/ase/_modules/ase/mep/neb.html.
 
 
-def _parse_incar(path: Path) -> tuple[int, str | None, float | None]:
+def _parse_incar(path: Path) -> tuple[int, str | None, float | None, float | None]:
     """Read the few INCAR values with an unambiguous MLIP equivalent."""
     images: int | None = None
     model_name: str | None = None
     ediffg: float | None = None
+    spring: float | None = None
     isif: int | None = None
 
     try:
@@ -109,10 +114,21 @@ def _parse_incar(path: Path) -> tuple[int, str | None, float | None]:
                         f"{path}:{line_number}: ISIF={isif} requests non-fixed-cell or "
                         "unsupported degrees of freedom; fixed-cell NEB requires ISIF 0, 1, or 2"
                     )
+            elif key == "SPRING":
+                if spring is not None:
+                    raise ValueError(f"{path}:{line_number}: repeated SPRING assignment")
+                try:
+                    spring = float(value)
+                except ValueError as exc:
+                    raise ValueError(
+                        f"{path}:{line_number}: SPRING must be a number, got {value!r}"
+                    ) from exc
+                if not math.isfinite(spring):
+                    raise ValueError(f"{path}:{line_number}: SPRING must be finite")
 
     if images is None:
         raise ValueError(f"VASP INCAR is missing required IMAGES assignment: {path}")
-    return images, model_name, ediffg
+    return images, model_name, ediffg, spring
 
 
 def _validate_image_folders(vasp_dir: Path, intermediate_images: int) -> list[Path]:
@@ -150,7 +166,7 @@ def translate_vasp_neb_directory(vasp_dir: str | Path) -> dict[str, Any]:
     if not incar.is_file():
         raise ValueError(f"VASP NEB directory is missing INCAR: {incar}")
 
-    intermediate_images, model_name, ediffg = _parse_incar(incar)
+    intermediate_images, model_name, ediffg, spring = _parse_incar(incar)
     image_paths = _validate_image_folders(root, intermediate_images)
 
     workflow: dict[str, Any] = {
@@ -166,6 +182,18 @@ def translate_vasp_neb_directory(vasp_dir: str | Path) -> dict[str, Any]:
         warnings.warn(
             "VASP EDIFFG >= 0 is an energy-change criterion and cannot be mapped "
             "to the MLIP force-convergence target; retaining the MLIP default.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+    if spring is not None and spring < 0:
+        workflow.setdefault("settings", {}).update(
+            k_spring_mlip=abs(spring),
+            k_spring=abs(spring),
+        )
+    elif spring is not None:
+        warnings.warn(
+            "VASP SPRING >= 0 uses different NEB semantics and cannot be mapped "
+            "to the MLIP improved-tangent spring constant; retaining the MLIP default.",
             RuntimeWarning,
             stacklevel=2,
         )
