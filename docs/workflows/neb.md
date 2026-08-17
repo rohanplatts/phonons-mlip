@@ -37,7 +37,9 @@ the final folder, with no extra numeric folders.
 
 The VASP `IMAGES` tag counts intermediate images. The frontend converts this
 to MLIP-Workflows' total image count, including endpoints, by adding two. For
-example, `IMAGES = 7` uses `n_images = 9` in the shared NEB engine.
+example, `IMAGES = 7` uses `n_images = 9` in the shared NEB engine. VASP-mode
+endpoints are assumed to have already been relaxed, so endpoint relaxation is
+disabled for this frontend.
 
 Optional comment directives select the MLIP model:
 
@@ -48,9 +50,29 @@ Optional comment directives select the MLIP model:
 
 The workflow directive is validated when present and must be `NEB` (case
 insensitive). If `MLIP_MODEL` is absent, the current MLIP fallback model
-(`ivac0_neb_ft`) is used. The frontend does not translate VASP ionic
-optimiser, spring, convergence, electronic, charge, spin, or dispersion tags;
-the existing MLIP defaults govern those settings.
+(`ivac0_neb_ft`) is used.
+
+The supported convergence and NEB controls are translated as follows:
+
+- Negative `EDIFFG` is a VASP force threshold in eV/Å. Its magnitude becomes
+  the final MLIP climbing-image `fmax` target. Positive `EDIFFG` is an energy
+  change criterion, so it is not converted into a force threshold; the
+  frontend warns and retains the MLIP default.
+- `SPRING = -s` is VASP's standard NEB convention (the default is `-5`). Its
+  magnitude is mapped to both MLIP spring settings. Positive and zero
+  `SPRING` values have different VASP semantics and are not mapped; the
+  frontend warns and retains MLIP defaults.
+- `ISIF = 0`, `1`, or `2` is accepted as fixed-cell input. Cell-changing
+  `ISIF` modes are rejected before the MLIP calculation starts.
+- `NSW` is validated but not mapped: VASP applies it to one optimizer loop,
+  while this workflow has rough, D3, and CI stages. The frontend warns rather
+  than multiplying the limit or inventing a stage allocation.
+
+`IBRION` and `POTIM` are VASP-optimizer-specific and are not translated to
+ASE/FIRE settings. Electronic, charge, spin, and dispersion tags likewise do
+not alter the MLIP calculation. The spring mapping follows the [VASP SPRING
+definition](https://vasp.at/wiki/index.php/SPRING) and ASE's
+[`improvedtangent` NEB implementation](https://wiki.fysik.dtu.dk/ase/_modules/ase/mep/neb.html).
 
 Intermediate VASP images are validated for the expected directory layout and
 `POSCAR` files, but the current MLIP NEB implementation regenerates its
