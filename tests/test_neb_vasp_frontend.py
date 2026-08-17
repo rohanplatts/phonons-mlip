@@ -20,6 +20,7 @@ class VaspNebFrontendTests(unittest.TestCase):
         missing_poscar: str | None = None,
         missing_folder: str | None = None,
         extra_folder: str | None = None,
+        intermediate_poscars: bool = True,
     ) -> Path:
         root.mkdir(parents=True, exist_ok=True)
         (root / "INCAR").write_text(
@@ -31,7 +32,7 @@ class VaspNebFrontendTests(unittest.TestCase):
             if folder.name == missing_folder:
                 continue
             folder.mkdir()
-            if folder.name != missing_poscar:
+            if folder.name != missing_poscar and (intermediate_poscars or index in (0, images + 1)):
                 (folder / "POSCAR").write_text("minimal POSCAR\n", encoding="utf-8")
         if extra_folder is not None:
             (root / extra_folder).mkdir()
@@ -201,19 +202,38 @@ class VaspNebFrontendTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, expected):
                     translate_vasp_neb_directory(root)
 
-    def test_invalid_image_layout_fails_clearly(self) -> None:
+    def test_only_endpoints_are_required(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb", intermediate_poscars=False)
+            for index in range(1, 8):
+                (root / f"{index:02d}").rmdir()
+            workflow = translate_vasp_neb_directory(root)["workflows"]["neb"]
+            self.assertEqual(workflow["n_images"], 9)
+            self.assertTrue(workflow["poscar_i"].endswith("00/POSCAR"))
+            self.assertTrue(workflow["poscar_f"].endswith("08/POSCAR"))
+
+    def test_missing_endpoint_fails_but_missing_intermediate_does_not(self) -> None:
         cases = [
-            {"missing_poscar": "04"},
             {"missing_poscar": "00"},
             {"missing_poscar": "08"},
-            {"missing_folder": "04"},
-            {"extra_folder": "09"},
         ]
         for options in cases:
             with self.subTest(options=options), tempfile.TemporaryDirectory() as tmp:
                 root = self._directory(Path(tmp) / "neb", **options)
                 with self.assertRaisesRegex(ValueError, "POSCAR|expected.*observed"):
                     translate_vasp_neb_directory(root)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb", missing_poscar="04")
+            translate_vasp_neb_directory(root)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb", missing_folder="04")
+            translate_vasp_neb_directory(root)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb", extra_folder="09")
+            translate_vasp_neb_directory(root)
 
     def test_malformed_workflow_directive_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

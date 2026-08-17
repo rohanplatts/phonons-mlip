@@ -25,21 +25,23 @@ vasp-neb/
   KPOINTS
   POTCAR
   00/POSCAR
-  01/POSCAR
-  ...
   0N/POSCAR
 ```
 
-`INCAR` and every numbered `POSCAR` are required. `KPOINTS` and `POTCAR`
-are conventional VASP inputs and are carried through to exported VASP paths
-when present. The image folders must be exactly contiguous from `00` through
-the final folder, with no extra numeric folders.
+`INCAR`, `00/POSCAR`, and the final endpoint `0N/POSCAR` are required.
+`KPOINTS` and `POTCAR` are conventional VASP inputs and are carried through
+to exported VASP paths when present. Intermediate numbered folders and their
+`POSCAR` files are optional; if present, they are not used to define the MLIP
+initial path.
 
-The VASP `IMAGES` tag counts intermediate images. The frontend converts this
+The VASP `IMAGES` tag counts intermediate images. It therefore determines the
+expected final endpoint folder (`0{IMAGES + 1}`) and the frontend converts it
 to MLIP-Workflows' total image count, including endpoints, by adding two. For
-example, `IMAGES = 7` uses `n_images = 9` in the shared NEB engine. VASP-mode
-endpoints are assumed to have already been relaxed, so endpoint relaxation is
-disabled for this frontend.
+example, `IMAGES = 7` requires `00/POSCAR` and `08/POSCAR`, then uses
+`n_images = 9` in the shared NEB engine. MLIP-Workflows constructs the
+intermediate coordinates with IDPP from those endpoints. VASP-mode endpoints
+are assumed to have already been relaxed, so endpoint relaxation is disabled
+for this frontend.
 
 Optional comment directives select the MLIP model:
 
@@ -74,10 +76,8 @@ not alter the MLIP calculation. The spring mapping follows the [VASP SPRING
 definition](https://vasp.at/wiki/index.php/SPRING) and ASE's
 [`improvedtangent` NEB implementation](https://wiki.fysik.dtu.dk/ase/_modules/ase/mep/neb.html).
 
-Intermediate VASP images are validated for the expected directory layout and
-`POSCAR` files, but the current MLIP NEB implementation regenerates its
-in-memory path with IDPP. This frontend does not alter the NEB scientific
-stages. Internally, the flow is:
+The current MLIP NEB implementation regenerates its in-memory path with IDPP;
+this frontend does not alter the NEB scientific stages. Internally, the flow is:
 
 ```text
 VASP directory -> translator -> in-memory raw config -> shared NEB engine

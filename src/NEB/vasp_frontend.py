@@ -21,7 +21,6 @@ _DIRECTIVE_RE = re.compile(
 )
 _DIRECTIVE_PREFIX_RE = re.compile(r"^\s*[#!]\s*MLIP_(WORKFLOW|MODEL)\b", re.IGNORECASE)
 _ASSIGNMENT_RE = re.compile(r"^\s*([A-Za-z][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$")
-_NUMERIC_FOLDER_RE = re.compile(r"\d+")
 # VASP ISIF 0, 1, and 2 vary ionic positions without changing cell shape or
 # volume; see https://vasp.at/wiki/ISIF.
 # VASP SPRING < 0 enables NEB and uses the magnitude as the inter-image spring
@@ -165,26 +164,12 @@ def _parse_incar(path: Path) -> tuple[int, str | None, float | None, float | Non
 
 def _validate_image_folders(vasp_dir: Path, intermediate_images: int) -> list[Path]:
     last_index = intermediate_images + 1
-    expected_names = [f"{index:02d}" for index in range(last_index + 1)]
-    observed_names = sorted(
-        [
-            entry.name
-            for entry in vasp_dir.iterdir()
-            if entry.is_dir() and _NUMERIC_FOLDER_RE.fullmatch(entry.name)
-        ],
-        key=int,
-    )
-    if observed_names != expected_names:
-        raise ValueError(
-            "VASP NEB image folders must be exactly contiguous; "
-            f"expected {expected_names}, observed {observed_names}"
-        )
-
+    endpoint_names = ["00", f"{last_index:02d}"]
     image_paths: list[Path] = []
-    for name in expected_names:
+    for name in endpoint_names:
         poscar = vasp_dir / name / "POSCAR"
         if not poscar.is_file():
-            raise ValueError(f"Missing POSCAR for VASP NEB image {name}: {poscar}")
+            raise ValueError(f"Missing VASP NEB endpoint POSCAR {name}: {poscar}")
         image_paths.append(poscar.resolve())
     return image_paths
 
