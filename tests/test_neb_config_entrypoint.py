@@ -103,6 +103,7 @@ class NebConfigEntrypointTests(unittest.TestCase):
             with (
                 patch.object(run_neb_raw_v2, "_run_neb", return_value=0) as engine,
                 patch.object(run_neb_raw_v2, "maybe_fan_out", return_value=None),
+                patch.object(run_neb_raw_v2.env_manager, "dispatch_if_needed", return_value=None),
             ):
                 rc = run_neb_raw_v2.main(
                     ["--inputs", str(root), "--n-images", "11"],

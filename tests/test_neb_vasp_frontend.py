@@ -131,12 +131,31 @@ class VaspNebFrontendTests(unittest.TestCase):
     def test_cli_forwards_vasp_directory_without_yaml_lookup(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self._directory(Path(tmp) / "neb")
-            with patch("NEB.vasp_frontend.run_vasp_neb_directory", return_value=31) as frontend:
+            with (
+                patch("NEB.vasp_frontend.run_vasp_neb_directory", return_value=31) as frontend,
+                patch.object(run_neb_raw_v2.env_manager, "dispatch_if_needed", return_value=None),
+            ):
                 rc = run_neb_raw_v2.main(["--vasp", str(root)], repo_root=Path(tmp) / "repo")
 
             self.assertEqual(rc, 31)
             frontend.assert_called_once_with(root, repo_root=Path(tmp) / "repo")
             self.assertFalse((root / "config.yml").exists())
+
+    def test_vasp_dispatch_happens_before_scientific_frontend(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(
+                Path(tmp) / "neb",
+                incar="# MLIP_MODEL = mattersim-v1.0.0-5M\nIMAGES = 7\n",
+            )
+            with (
+                patch.object(run_neb_raw_v2.env_manager, "dispatch_if_needed", return_value=19) as dispatch,
+                patch("NEB.vasp_frontend.run_vasp_neb_directory") as frontend,
+            ):
+                rc = run_neb_raw_v2.main(["--vasp", str(root)])
+            self.assertEqual(rc, 19)
+            dispatch.assert_called_once()
+            self.assertEqual(dispatch.call_args.args[0], "mattersim-v1.0.0-5M")
+            frontend.assert_not_called()
 
     def test_cli_rejects_vasp_with_config_or_inputs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

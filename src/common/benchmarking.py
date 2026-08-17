@@ -11,6 +11,8 @@ from typing import Any
 
 import yaml
 
+from common import environment as env_manager
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SUPPORTED_MODELS_PATH = REPO_ROOT / "SUPPORTED_MODELS.yml"
@@ -50,25 +52,15 @@ def resolve_inputs_path(inputs: Path) -> Path:
 
 
 def load_supported_models() -> dict[str, dict[str, Any]]:
-    if not SUPPORTED_MODELS_PATH.exists():
-        raise FileNotFoundError(f"Missing supported model registry: {SUPPORTED_MODELS_PATH}")
-    raw = load_yaml(SUPPORTED_MODELS_PATH)
-    models = raw.get("models", raw) or {}
-    if not isinstance(models, dict):
-        raise TypeError(f"Unsupported SUPPORTED_MODELS.yml format: {SUPPORTED_MODELS_PATH}")
-    return models
+    return env_manager.load_supported_models(SUPPORTED_MODELS_PATH)
 
 
 def model_environment(model_name: str, supported_models: dict[str, dict[str, Any]]) -> str:
-    entry = supported_models.get(model_name)
-    if entry is None:
-        raise KeyError(f"Model {model_name!r} is missing from {SUPPORTED_MODELS_PATH.name}")
-    if not isinstance(entry, dict):
-        raise TypeError(f"Model entry for {model_name!r} must be a mapping")
-    environment = entry.get("environment")
-    if not environment:
-        raise ValueError(f"Model {model_name!r} has no environment in {SUPPORTED_MODELS_PATH.name}")
-    return str(environment)
+    return env_manager.required_environment(
+        model_name,
+        supported_models,
+        registry_path=SUPPORTED_MODELS_PATH,
+    )
 
 
 def model_names(config: dict[str, Any]) -> list[str]:
@@ -138,11 +130,6 @@ def rewrite_config_for_model(config: dict[str, Any], model_name: str, *, config_
 
 def build_command(spec: WorkflowSpec, *, config_path: Path, environment: str) -> list[str]:
     command = [
-        "conda",
-        "run",
-        "--no-capture-output",
-        "-n",
-        environment,
         "python",
         "-m",
         spec.module,
@@ -153,7 +140,7 @@ def build_command(spec: WorkflowSpec, *, config_path: Path, environment: str) ->
         command.extend(["--config", str(config_path)])
     else:
         raise ValueError(f"Unknown workflow config flag: {spec.config_flag!r}")
-    return command
+    return env_manager.conda_command(environment, command)
 
 
 def run_workflow(spec: WorkflowSpec, *, config_path: Path, environment: str) -> int:

@@ -30,6 +30,26 @@ _NUMERIC_FOLDER_RE = re.compile(r"\d+")
 # https://wiki.fysik.dtu.dk/ase/_modules/ase/mep/neb.html.
 
 
+def read_vasp_model_name(vasp_dir: str | Path) -> str:
+    """Read only the model directive needed for environment dispatch."""
+    root = Path(vasp_dir).expanduser().resolve()
+    incar = root / "INCAR"
+    if not incar.is_file():
+        raise ValueError(f"VASP NEB directory is missing INCAR: {incar}")
+    model_name: str | None = None
+    for line in incar.read_text(encoding="utf-8").splitlines():
+        match = _DIRECTIVE_RE.match(line)
+        if not match or match.group(1).upper() != "MODEL":
+            continue
+        value = match.group(2).strip()
+        if not value:
+            raise ValueError(f"{incar}: MLIP_MODEL cannot be empty")
+        if model_name is not None:
+            raise ValueError(f"{incar}: repeated MLIP_MODEL directive")
+        model_name = value
+    return model_name or "ivac0_neb_ft"
+
+
 def _parse_incar(path: Path) -> tuple[int, str | None, float | None, float | None, int | None]:
     """Read the few INCAR values with an unambiguous MLIP equivalent."""
     images: int | None = None

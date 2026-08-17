@@ -15,6 +15,7 @@ from .relax import relax_model
 from .report import write_report
 from .select import select_clusters
 from .vasp import prepare_dft
+from common import environment as env_manager
 from common.benchmarking import maybe_fan_out
 
 
@@ -453,6 +454,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.command is None:
         parser.print_help()
         return 0
+    if args.command in {"run", "relax"}:
+        model_name = _model_name(args, config)
+        dispatched = env_manager.dispatch_if_needed(
+            model_name,
+            [sys.executable, "-m", "defect_landscape.snb.cli", *raw_argv],
+            cwd=Path.cwd(),
+        )
+        if dispatched is not None:
+            return dispatched
     dispatch(args, config)
     return 0
 

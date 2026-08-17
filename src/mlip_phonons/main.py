@@ -25,6 +25,7 @@ if __package__ in (None, ""):
     __package__ = "mlip_phonons"
 
 from common.get_calc import get_calc_object
+from common import environment as env_manager
 from common.benchmarking import maybe_fan_out
 from common.relax import relax
 from .phonons import get_phonons, get_band_structure, get_dos, write_gamma_band_yaml_for_plumipy
@@ -847,6 +848,13 @@ def main(argv: list[str] | None = None) -> int:
     if not model_name:
         raise SystemExit("Missing model_name. Set mlip_phonons.defaults.model_name in config.yml.")
     model_name = str(model_name)
+    dispatched = env_manager.dispatch_if_needed(
+        model_name,
+        [sys.executable, "-m", "mlip_phonons.main", *(sys.argv[1:] if argv is None else argv)],
+        cwd=Path.cwd(),
+    )
+    if dispatched is not None:
+        return dispatched
     structure_override = args.structure or defaults_cfg.get("structure") or None
 
     try:

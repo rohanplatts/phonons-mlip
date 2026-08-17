@@ -36,6 +36,7 @@ from NEB.neb_tools.neb_parsers import (
     write_neb_summary,
     resolve_config_path,
 )
+from common import environment as env_manager
 from common.benchmarking import benchmark_root, maybe_fan_out, model_names
 from NEB.neb_tools.benchmark_report import benchmark_results_ready, generate_family_benchmark_report
 
@@ -453,6 +454,7 @@ def _run_neb(args: NEBInputs, defaults: NEBDefaults) -> int:
 
 
 def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int:
+    original_argv = list(sys.argv[1:] if argv is None else argv)
     repo_root = Path(repo_root) if repo_root is not None else REPO_ROOT
     if str(repo_root / "src") not in sys.path:
         sys.path.insert(0, str(repo_root / "src"))
@@ -471,7 +473,16 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
                 "--vasp accepts no other run options; use the VASP directory "
                 "INCAR directives and MLIP defaults"
             )
-        from NEB.vasp_frontend import run_vasp_neb_directory
+        from NEB.vasp_frontend import read_vasp_model_name, run_vasp_neb_directory
+
+        model_name = read_vasp_model_name(pre_args.vasp)
+        dispatched = env_manager.dispatch_if_needed(
+            model_name,
+            [sys.executable, "-m", "NEB.run_neb_raw_v2", *original_argv],
+            cwd=Path.cwd(),
+        )
+        if dispatched is not None:
+            return dispatched
 
         return run_vasp_neb_directory(pre_args.vasp, repo_root=repo_root)
 
@@ -523,6 +534,13 @@ def main(argv: list[str] | None = None, *, repo_root: Path | None = None) -> int
             compare_argv.extend(["--dft-neb-dat", str(args.dft_neb_dat)])
         compare_argv.append("--include-vdw" if args.include_vdw else "--no-include-vdw")
         return compare_main(compare_argv, repo_root=repo_root)
+    dispatched = env_manager.dispatch_if_needed(
+        str(args.model_name),
+        [sys.executable, "-m", "NEB.run_neb_raw_v2", *original_argv],
+        cwd=Path.cwd(),
+    )
+    if dispatched is not None:
+        return dispatched
     return run_neb_from_config(
         config,
         run_root=run_root,
