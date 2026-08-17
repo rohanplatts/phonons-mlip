@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+import warnings
 from pathlib import Path
 from unittest.mock import patch
 
@@ -47,7 +48,35 @@ class VaspNebFrontendTests(unittest.TestCase):
             self.assertEqual(workflow["poscar_i"], str((root / "00/POSCAR").resolve()))
             self.assertEqual(workflow["poscar_f"], str((root / "08/POSCAR").resolve()))
             self.assertEqual(workflow["vasp_inputs_dir"], str(root.resolve()))
+            self.assertFalse(workflow["relax_endpoints"])
             self.assertNotIn("model_name", workflow)
+
+    def test_negative_ediffg_sets_final_force_target(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb", incar="IMAGES = 7\nEDIFFG = -0.015\n")
+            workflow = translate_vasp_neb_directory(root)["workflows"]["neb"]
+            self.assertEqual(workflow["settings"], {"fmax_ci": 0.015})
+
+    def test_positive_ediffg_warns_and_keeps_mlips_force_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb", incar="IMAGES = 7\nEDIFFG = 0.02\n")
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                workflow = translate_vasp_neb_directory(root)["workflows"]["neb"]
+            self.assertNotIn("settings", workflow)
+            self.assertTrue(any("energy-change criterion" in str(item.message) for item in caught))
+
+    def test_fixed_cell_isif_values_are_accepted(self) -> None:
+        for isif in (0, 1, 2):
+            with self.subTest(isif=isif), tempfile.TemporaryDirectory() as tmp:
+                root = self._directory(Path(tmp) / "neb", incar=f"IMAGES = 7\nISIF = {isif}\n")
+                translate_vasp_neb_directory(root)
+
+    def test_cell_changing_isif_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb", incar="IMAGES = 7\nISIF = 3\n")
+            with self.assertRaisesRegex(ValueError, "fixed-cell NEB"):
+                translate_vasp_neb_directory(root)
 
     def test_directives_and_incar_syntax_are_parsed(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -114,6 +143,8 @@ class VaspNebFrontendTests(unittest.TestCase):
             ("IMAGES = 7\n# MLIP_WORKFLOW = phonons\n", "must be NEB"),
             ("IMAGES = 7\n# MLIP_MODEL =\n", "cannot be empty"),
             ("IMAGES = 7\n# MLIP_MODEL = first\n# MLIP_MODEL = second\n", "repeated"),
+            ("IMAGES = 7\nEDIFFG = nan\n", "finite"),
+            ("IMAGES = 7\nEDIFFG = -0.01\nEDIFFG = -0.02\n", "repeated EDIFFG"),
         ]
         for incar, expected in cases:
             with self.subTest(expected=expected), tempfile.TemporaryDirectory() as tmp:

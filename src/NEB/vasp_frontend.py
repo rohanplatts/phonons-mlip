@@ -8,7 +8,9 @@ scientific stages.
 
 from __future__ import annotations
 
+import math
 import re
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -20,12 +22,16 @@ _DIRECTIVE_RE = re.compile(
 _DIRECTIVE_PREFIX_RE = re.compile(r"^\s*[#!]\s*MLIP_(WORKFLOW|MODEL)\b", re.IGNORECASE)
 _ASSIGNMENT_RE = re.compile(r"^\s*([A-Za-z][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$")
 _NUMERIC_FOLDER_RE = re.compile(r"\d+")
+# VASP ISIF 0, 1, and 2 vary ionic positions without changing cell shape or
+# volume; see https://vasp.at/wiki/ISIF.
 
 
-def _parse_incar(path: Path) -> tuple[int, str | None]:
-    """Read the small, explicitly supported subset of a VASP INCAR."""
+def _parse_incar(path: Path) -> tuple[int, str | None, float | None]:
+    """Read the few INCAR values with an unambiguous MLIP equivalent."""
     images: int | None = None
     model_name: str | None = None
+    ediffg: float | None = None
+    isif: int | None = None
 
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
@@ -63,26 +69,50 @@ def _parse_incar(path: Path) -> tuple[int, str | None]:
             if not match:
                 continue
             key, value = match.groups()
-            if key.upper() != "IMAGES":
-                continue
             value = value.strip()
-            if images is not None:
-                raise ValueError(f"{path}:{line_number}: repeated IMAGES assignment")
-            try:
-                parsed = int(value)
-            except ValueError as exc:
-                raise ValueError(
-                    f"{path}:{line_number}: IMAGES must be an integer, got {value!r}"
-                ) from exc
-            if parsed < 1:
-                raise ValueError(
-                    f"{path}:{line_number}: IMAGES must be at least 1, got {parsed}"
-                )
-            images = parsed
+            key = key.upper()
+            if key == "IMAGES":
+                if images is not None:
+                    raise ValueError(f"{path}:{line_number}: repeated IMAGES assignment")
+                try:
+                    images = int(value)
+                except ValueError as exc:
+                    raise ValueError(
+                        f"{path}:{line_number}: IMAGES must be an integer, got {value!r}"
+                    ) from exc
+                if images < 1:
+                    raise ValueError(
+                        f"{path}:{line_number}: IMAGES must be at least 1, got {images}"
+                    )
+            elif key == "EDIFFG":
+                if ediffg is not None:
+                    raise ValueError(f"{path}:{line_number}: repeated EDIFFG assignment")
+                try:
+                    ediffg = float(value)
+                except ValueError as exc:
+                    raise ValueError(
+                        f"{path}:{line_number}: EDIFFG must be a number, got {value!r}"
+                    ) from exc
+                if not math.isfinite(ediffg):
+                    raise ValueError(f"{path}:{line_number}: EDIFFG must be finite")
+            elif key == "ISIF":
+                if isif is not None:
+                    raise ValueError(f"{path}:{line_number}: repeated ISIF assignment")
+                try:
+                    isif = int(value)
+                except ValueError as exc:
+                    raise ValueError(
+                        f"{path}:{line_number}: ISIF must be an integer, got {value!r}"
+                    ) from exc
+                if isif not in {0, 1, 2}:
+                    raise ValueError(
+                        f"{path}:{line_number}: ISIF={isif} requests non-fixed-cell or "
+                        "unsupported degrees of freedom; fixed-cell NEB requires ISIF 0, 1, or 2"
+                    )
 
     if images is None:
         raise ValueError(f"VASP INCAR is missing required IMAGES assignment: {path}")
-    return images, model_name
+    return images, model_name, ediffg
 
 
 def _validate_image_folders(vasp_dir: Path, intermediate_images: int) -> list[Path]:
@@ -120,7 +150,7 @@ def translate_vasp_neb_directory(vasp_dir: str | Path) -> dict[str, Any]:
     if not incar.is_file():
         raise ValueError(f"VASP NEB directory is missing INCAR: {incar}")
 
-    intermediate_images, model_name = _parse_incar(incar)
+    intermediate_images, model_name, ediffg = _parse_incar(incar)
     image_paths = _validate_image_folders(root, intermediate_images)
 
     workflow: dict[str, Any] = {
@@ -128,7 +158,17 @@ def translate_vasp_neb_directory(vasp_dir: str | Path) -> dict[str, Any]:
         "poscar_f": str(image_paths[-1]),
         "n_images": intermediate_images + 2,
         "vasp_inputs_dir": str(root),
+        "relax_endpoints": False,
     }
+    if ediffg is not None and ediffg < 0:
+        workflow["settings"] = {"fmax_ci": abs(ediffg)}
+    elif ediffg is not None:
+        warnings.warn(
+            "VASP EDIFFG >= 0 is an energy-change criterion and cannot be mapped "
+            "to the MLIP force-convergence target; retaining the MLIP default.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
     if model_name is not None:
         workflow["model_name"] = model_name
     return {"workflows": {"neb": workflow}}
