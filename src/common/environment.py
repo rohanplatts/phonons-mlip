@@ -36,6 +36,8 @@ def required_environment(
     entry = models.get(model_name)
     if entry is None:
         raise KeyError(f"Model {model_name!r} is missing from {registry_path.name}")
+    if not isinstance(entry, Mapping):
+        raise TypeError(f"Model entry for {model_name!r} must be a mapping")
     environment = entry.get("environment")
     if not environment:
         raise ValueError(f"Model {model_name!r} has no environment in {registry_path.name}")
