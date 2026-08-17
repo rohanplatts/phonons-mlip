@@ -126,6 +126,7 @@ class VaspNebFrontendTests(unittest.TestCase):
             config, = runner.call_args.args
             self.assertEqual(config["workflows"]["neb"]["n_images"], 9)
             self.assertEqual(runner.call_args.kwargs["run_root"], root.resolve())
+            self.assertTrue(runner.call_args.kwargs["auto_submit_vasp"])
             self.assertFalse((root / "config.yml").exists())
 
     def test_cli_forwards_vasp_directory_without_yaml_lookup(self) -> None:

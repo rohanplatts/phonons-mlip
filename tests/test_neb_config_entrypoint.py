@@ -90,6 +90,7 @@ class NebConfigEntrypointTests(unittest.TestCase):
             self.assertEqual(inputs.n_images, 9)
             self.assertEqual(inputs.poscar_i, root / "initial" / "POSCAR")
             self.assertEqual(defaults.steps_ci, 42)
+            self.assertFalse(engine.call_args.kwargs["auto_submit_vasp"])
             self.assertFalse((root / "config.yml").exists())
 
     def test_yaml_cli_path_uses_shared_loaded_config_engine(self) -> None:

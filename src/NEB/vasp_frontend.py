@@ -252,4 +252,9 @@ def run_vasp_neb_directory(
 
     root = Path(vasp_dir).expanduser().resolve()
     config = translate_vasp_neb_directory(root)
-    return run_neb_from_config(config, run_root=root, repo_root=repo_root)
+    return run_neb_from_config(
+        config,
+        run_root=root,
+        repo_root=repo_root,
+        auto_submit_vasp=True,
+    )

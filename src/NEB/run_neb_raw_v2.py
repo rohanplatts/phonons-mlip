@@ -39,6 +39,7 @@ from NEB.neb_tools.neb_parsers import (
 from common import environment as env_manager
 from common.benchmarking import benchmark_root, maybe_fan_out, model_names
 from NEB.neb_tools.benchmark_report import benchmark_results_ready, generate_family_benchmark_report
+from NEB.vasp_submit import submit_vasp_ci
 
 
 def _parse_args(
@@ -224,6 +225,7 @@ def run_neb_from_config(
     run_root: Path,
     repo_root: Path | None = None,
     inputs: NEBInputs | None = None,
+    auto_submit_vasp: bool = False,
 ) -> int:
     """Run the standard NEB engine from an already loaded config dictionary."""
     resolved_repo_root = Path(repo_root) if repo_root is not None else REPO_ROOT
@@ -232,10 +234,14 @@ def run_neb_from_config(
         run_root=Path(run_root),
         repo_root=resolved_repo_root,
     )
-    return _run_neb(inputs if inputs is not None else default_inputs, defaults)
+    return _run_neb(
+        inputs if inputs is not None else default_inputs,
+        defaults,
+        auto_submit_vasp=auto_submit_vasp,
+    )
 
 
-def _run_neb(args: NEBInputs, defaults: NEBDefaults) -> int:
+def _run_neb(args: NEBInputs, defaults: NEBDefaults, *, auto_submit_vasp: bool = False) -> int:
     """Execute the unchanged scientific NEB workflow from resolved inputs."""
     from common.get_calc import get_calc_object
     from common.relax import relax
@@ -450,6 +456,8 @@ def _run_neb(args: NEBInputs, defaults: NEBDefaults) -> int:
     print(f"SUCCESS wrote raw NEB to {output_dirs.out_raw}")
     print(f"VASP pre-CI path written to {output_dirs.vasp_mlip_d3_dir}")
     print(f"VASP post-CI path written to {output_dirs.vasp_ci_dir}")
+    if auto_submit_vasp:
+        submit_vasp_ci(output_dirs.vasp_ci_dir)
     return 0
 
 
