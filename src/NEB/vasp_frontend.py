@@ -30,12 +30,13 @@ _NUMERIC_FOLDER_RE = re.compile(r"\d+")
 # https://wiki.fysik.dtu.dk/ase/_modules/ase/mep/neb.html.
 
 
-def _parse_incar(path: Path) -> tuple[int, str | None, float | None, float | None]:
+def _parse_incar(path: Path) -> tuple[int, str | None, float | None, float | None, int | None]:
     """Read the few INCAR values with an unambiguous MLIP equivalent."""
     images: int | None = None
     model_name: str | None = None
     ediffg: float | None = None
     spring: float | None = None
+    nsw: int | None = None
     isif: int | None = None
 
     try:
@@ -125,10 +126,21 @@ def _parse_incar(path: Path) -> tuple[int, str | None, float | None, float | Non
                     ) from exc
                 if not math.isfinite(spring):
                     raise ValueError(f"{path}:{line_number}: SPRING must be finite")
+            elif key == "NSW":
+                if nsw is not None:
+                    raise ValueError(f"{path}:{line_number}: repeated NSW assignment")
+                try:
+                    nsw = int(value)
+                except ValueError as exc:
+                    raise ValueError(
+                        f"{path}:{line_number}: NSW must be a non-negative integer, got {value!r}"
+                    ) from exc
+                if nsw < 0:
+                    raise ValueError(f"{path}:{line_number}: NSW must be non-negative")
 
     if images is None:
         raise ValueError(f"VASP INCAR is missing required IMAGES assignment: {path}")
-    return images, model_name, ediffg, spring
+    return images, model_name, ediffg, spring, nsw
 
 
 def _validate_image_folders(vasp_dir: Path, intermediate_images: int) -> list[Path]:
@@ -166,7 +178,7 @@ def translate_vasp_neb_directory(vasp_dir: str | Path) -> dict[str, Any]:
     if not incar.is_file():
         raise ValueError(f"VASP NEB directory is missing INCAR: {incar}")
 
-    intermediate_images, model_name, ediffg, spring = _parse_incar(incar)
+    intermediate_images, model_name, ediffg, spring, nsw = _parse_incar(incar)
     image_paths = _validate_image_folders(root, intermediate_images)
 
     workflow: dict[str, Any] = {
@@ -194,6 +206,14 @@ def translate_vasp_neb_directory(vasp_dir: str | Path) -> dict[str, Any]:
         warnings.warn(
             "VASP SPRING >= 0 uses different NEB semantics and cannot be mapped "
             "to the MLIP improved-tangent spring constant; retaining the MLIP default.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+    if nsw is not None:
+        warnings.warn(
+            "VASP NSW is a limit for one optimizer loop and cannot be mapped "
+            "defensibly across the MLIP rough, D3, and CI stages; retaining "
+            "the MLIP stage limits.",
             RuntimeWarning,
             stacklevel=2,
         )

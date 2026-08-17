@@ -73,6 +73,15 @@ class VaspNebFrontendTests(unittest.TestCase):
                 self.assertNotIn("settings", workflow)
                 self.assertTrue(any("different NEB semantics" in str(item.message) for item in caught))
 
+    def test_nsw_warns_without_changing_stage_limits(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._directory(Path(tmp) / "neb", incar="IMAGES = 7\nNSW = 300\n")
+            with warnings.catch_warnings(record=True) as caught:
+                warnings.simplefilter("always")
+                workflow = translate_vasp_neb_directory(root)["workflows"]["neb"]
+            self.assertNotIn("settings", workflow)
+            self.assertTrue(any("cannot be mapped defensibly" in str(item.message) for item in caught))
+
     def test_positive_ediffg_warns_and_keeps_mlips_force_default(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self._directory(Path(tmp) / "neb", incar="IMAGES = 7\nEDIFFG = 0.02\n")
@@ -101,7 +110,7 @@ class VaspNebFrontendTests(unittest.TestCase):
                 incar=(
                     "# mlip_workflow = neb\n"
                     "! MLIP_MODEL = mace-omat-0-medium\n"
-                    "IMAGES = 7; NSW = 100 ! unrelated setting\n"
+                    "IMAGES = 7; ENCUT = 500 ! unrelated setting\n"
                 ),
             )
             workflow = translate_vasp_neb_directory(root)["workflows"]["neb"]
@@ -163,6 +172,8 @@ class VaspNebFrontendTests(unittest.TestCase):
             ("IMAGES = 7\nEDIFFG = -0.01\nEDIFFG = -0.02\n", "repeated EDIFFG"),
             ("IMAGES = 7\nSPRING = nan\n", "finite"),
             ("IMAGES = 7\nSPRING = -5\nSPRING = -4\n", "repeated SPRING"),
+            ("IMAGES = 7\nNSW = -1\n", "non-negative"),
+            ("IMAGES = 7\nNSW = 10\nNSW = 20\n", "repeated NSW"),
         ]
         for incar, expected in cases:
             with self.subTest(expected=expected), tempfile.TemporaryDirectory() as tmp:
