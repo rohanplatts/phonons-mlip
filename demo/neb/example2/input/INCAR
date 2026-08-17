@@ -1,3 +1,6 @@
+# MLIP_WORKFLOW = NEB
+# MLIP_MODEL = mace-mpa-0-medium
+
 System = ortho CsPbI3 + defect in relaxed 80 atom supercell
 
 GGA = PE        ! XC functional; PBE

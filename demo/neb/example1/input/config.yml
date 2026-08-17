@@ -1,6 +1,10 @@
 defaults:
   model_name: mace-mpa-0-medium
-  outputs_root: ../results
+  outputs_root: ../outputs
+  poscar_i: POSCAR_i
+  poscar_f: POSCAR_f
+  dft_neb_dat: neb.dat
+  vasp_inputs_dir: .
   device: cuda
   dtype: float32
   overwrite: true
@@ -9,8 +13,8 @@ defaults:
   remap_f_i: true
 workflows:
   neb:
+    n_images: 7
     settings:
-      n_images: 6
       fmax_mlip_guess: 0.03
       steps_mlip_guess: 300
       fmax_ci: 0.03
