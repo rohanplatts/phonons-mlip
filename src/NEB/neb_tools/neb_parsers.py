@@ -9,6 +9,8 @@ import yaml
 
 from ase.io import read, write
 
+from NEB.vasp_submit import copy_known_submission_script
+
 
 _TOTEN_RE = re.compile(r"free\s+energy\s+TOTEN\s*=\s*([-0-9.]+)")
 _E0_RE = re.compile(r"energy\s+without\s+entropy\s*=\s*([-0-9.]+)")
@@ -231,6 +233,8 @@ def export_vasp_neb_paths(
     if vasp_inputs_dir is not None:
         copy_vasp_inputs(vasp_inputs_dir, mlip_d3_dir)
         copy_vasp_inputs(vasp_inputs_dir, ci_dir)
+        copy_known_submission_script(vasp_inputs_dir, mlip_d3_dir)
+        copy_known_submission_script(vasp_inputs_dir, ci_dir)
     return mlip_d3_dir, ci_dir
 
 
